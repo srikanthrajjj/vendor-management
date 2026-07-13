@@ -47,7 +47,7 @@ const COL_HEADERS = ["Bank Name", "Account Number", "Bank Key", "Account Type", 
 const CURRENCIES = ["US Dollar","Euro","British Pound","Indian Rupee","UAE Dirham","Afghani","Swiss Franc","Australian Dollar","Canadian Dollar","Japanese Yen"];
 const ACCOUNT_TYPES = ["Saving account","Current account","Checking account","Fixed deposit"];
 const COUNTRIES = ["Afghanistan","Australia","Canada","France","Germany","India","Japan","United Kingdom","United States","UAE"];
-const PREVIEW_COLS = ["Account holder","Bank Country","Bank Key","Bank Name","Swift Code","Bank Account","IBAN","Currency"];
+const PREVIEW_COLS: string[] = [];
 
 const navItems = [
   { id: "invoices", label: "My Invoices", icon: FileText },
@@ -169,12 +169,6 @@ function BankFormModal({ editBank, onSave, onClose }: {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-semibold text-[#1a2942]">Bank Details</span>
             <HelpCircle className="w-3.5 h-3.5 text-[#aaa]" />
-          </div>
-
-          <div className="border border-[rgba(0,0,0,0.1)] rounded-lg mb-5 overflow-x-auto">
-            <div className="flex min-w-max bg-[#f8fafc] px-4 py-2.5 gap-5">
-              {PREVIEW_COLS.map(col => <span key={col} className="text-xs font-semibold text-[#555] whitespace-nowrap">{col}</span>)}
-            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
