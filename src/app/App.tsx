@@ -21,7 +21,7 @@ type BankEntry = {
   type: string;
   currency: string;
   isDefault: boolean;
-  status: "active" | "removed";
+  status: "active" | "removed" | "pending_reinstatement";
   accountHolder: string;
   routingNo: string;
   swiftCode: string;
@@ -510,8 +510,8 @@ function KebabMenu({ onEdit, onReplace }: { onEdit?: () => void; onReplace?: () 
 }
 
 // ─── Bank Row ────────────────────────────────────────────────────
-function BankRow({ bank, removed, canRemove = true, onView, onRemove, onReinstate, onEdit, onReplace }: {
-  bank: BankEntry; removed?: boolean; canRemove?: boolean;
+function BankRow({ bank, removed, pendingReinstatement, canRemove = true, onView, onRemove, onReinstate, onEdit, onReplace }: {
+  bank: BankEntry; removed?: boolean; pendingReinstatement?: boolean; canRemove?: boolean;
   onView?: () => void; onRemove?: () => void; onReinstate?: () => void;
   onEdit?: () => void; onReplace?: () => void;
 }) {
@@ -523,6 +523,9 @@ function BankRow({ bank, removed, canRemove = true, onView, onRemove, onReinstat
           <span className="text-xs font-medium text-[#1a2942]">{bank.name}</span>
           {bank.isDefault && !removed && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(28,171,226,0.12)", color: CYAN }}>Default</span>
+          )}
+          {pendingReinstatement && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">Pending Reinstatement</span>
           )}
         </div>
       </td>
@@ -536,6 +539,8 @@ function BankRow({ bank, removed, canRemove = true, onView, onRemove, onReinstat
             <button onClick={onReinstate} className="text-xs font-semibold px-3 py-1 rounded-md border transition-colors hover:bg-[#f0f4f8]" style={{ borderColor: CYAN, color: CYAN }}>
               Reinstate
             </button>
+          ) : pendingReinstatement ? (
+            <span className="text-xs font-semibold px-3 py-1 rounded-md bg-amber-50 text-amber-600 border border-amber-200">Pending</span>
           ) : (
             <button onClick={onView} className="p-1 rounded hover:bg-[#f0f4f8] transition-colors text-[#888]">
               <Eye className="w-3.5 h-3.5" />
@@ -579,7 +584,7 @@ export default function App() {
   const [deleteBank, setDeleteBank] = useState<BankEntry | null>(null);
 
   const activeBanks = banks.filter(b => b.status === "active");
-  const removedBanks = banks.filter(b => b.status === "removed");
+  const removedBanks = banks.filter(b => b.status === "removed" || b.status === "pending_reinstatement");
   const canAddBank = activeBanks.length < 2;
 
   function handleAddBank(data: FormData) {
@@ -620,7 +625,7 @@ export default function App() {
 
   function handleReinstate(id: number) {
     if (activeBanks.length >= 2) return;
-    setBanks(prev => prev.map(b => b.id === id ? { ...b, status: "active" } : b));
+    setBanks(prev => prev.map(b => b.id === id ? { ...b, status: "pending_reinstatement" as const } : b));
     const caseNumber = generateCaseNumber();
     toast.success(`Your request to reinstate bank account has been submitted. Case number: ${caseNumber}`);
   }
@@ -800,7 +805,7 @@ export default function App() {
                       </thead>
                       <tbody>
                         {removedBanks.map(b => (
-                          <BankRow key={b.id} bank={b} removed
+                          <BankRow key={b.id} bank={b} removed={b.status === "removed"} pendingReinstatement={b.status === "pending_reinstatement"}
                             onRemove={() => setDeleteBank(b)}
                             onReinstate={() => handleReinstate(b.id)}
                           />
