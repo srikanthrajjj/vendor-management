@@ -668,7 +668,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen bg-[#f0f4f8] overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors duration={Infinity} />
 
       {/* Modals */}
       {showAddBank && (
