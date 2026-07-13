@@ -253,7 +253,7 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
   onConfirm: (replacementId: number) => void;
   onClose: () => void;
 }) {
-  const [step, setStep] = useState<"select" | "confirm" | "done">("select");
+  const [step, setStep] = useState<"select" | "confirm">("select");
   const [selected, setSelected] = useState<number | null>(null);
   const selectedBank = otherActive.find(b => b.id === selected) ?? null;
 
@@ -261,7 +261,7 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
     if (typeof selected === "number") {
       onConfirm(selected);
     }
-    setStep("done");
+    onClose();
   }
 
   return (
@@ -377,22 +377,6 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                 <button onClick={() => setStep("select")} className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#555] border border-[rgba(0,0,0,0.15)] hover:bg-[#f0f4f8] transition-colors">Back</button>
                 <button onClick={handleConfirm} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: CYAN }}>Confirm Replacement</button>
               </div>
-            </div>
-          )}
-
-          {/* Done */}
-          {step === "done" && (
-            <div className="flex flex-col items-center py-8 gap-3">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "#dcfce7" }}>
-                <CheckCircle2 className="w-7 h-7 text-emerald-500" />
-              </div>
-              <div className="text-center">
-                <div className="text-sm font-bold text-[#1a2942]">Account replaced successfully</div>
-                <div className="text-xs text-[#888] mt-1">
-                  {selected === "new" ? `${newForm.bankName} is now the active account.` : `${selectedBank?.name} is now the active account.`}
-                </div>
-              </div>
-              <button onClick={onClose} className="mt-2 px-6 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: CYAN }}>Done</button>
             </div>
           )}
         </div>
