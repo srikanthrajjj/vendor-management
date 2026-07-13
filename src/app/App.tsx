@@ -197,8 +197,12 @@ function BankFormModal({ editBank, onSave, onClose }: {
                 <BankInput id="bankAccount" value={form.bankAccount} onChange={field("bankAccount").onChange} />
               </div>
               <div>
-                <BankLabel>SWIFT Code</BankLabel>
-                <BankInput id="swiftCode" value={form.swiftCode} onChange={field("swiftCode").onChange} />
+                <BankLabel>Bank Account Type</BankLabel>
+                <BankSelect id="accountType" value={form.accountType} onChange={field("accountType").onChange} options={ACCOUNT_TYPES} />
+              </div>
+              <div>
+                <BankLabel>IBAN</BankLabel>
+                <BankInput id="iban" value={form.iban} onChange={field("iban").onChange} />
               </div>
             </div>
             {/* Right Column */}
@@ -210,6 +214,10 @@ function BankFormModal({ editBank, onSave, onClose }: {
               <div>
                 <BankLabel>Routing No / Branch Code / Bank Key</BankLabel>
                 <BankInput id="routingNo" value={form.routingNo} onChange={field("routingNo").onChange} />
+              </div>
+              <div>
+                <BankLabel>SWIFT Code</BankLabel>
+                <BankInput id="swiftCode" value={form.swiftCode} onChange={field("swiftCode").onChange} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
@@ -224,34 +232,25 @@ function BankFormModal({ editBank, onSave, onClose }: {
                 )}
                 <BankSelect id="currency" value={form.currency} onChange={field("currency").onChange} options={CURRENCIES} />
               </div>
-              <div>
-                <BankLabel>Bank Account Type</BankLabel>
-                <BankSelect id="accountType" value={form.accountType} onChange={field("accountType").onChange} options={ACCOUNT_TYPES} />
-              </div>
-              <div>
-                <BankLabel>IBAN</BankLabel>
-                <BankInput id="iban" value={form.iban} onChange={field("iban").onChange} />
-              </div>
-            </div>
-          </div>
-
-          {!isEdit && (
-            <div className="mt-6">
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="text-xs font-medium text-[#1a2942]"><span className="text-red-500 mr-0.5">*</span>Add Proof of Bank account</span>
-                <HelpCircle className="w-3 h-3 text-[#aaa]" />
-              </div>
-              {showProofNote && (
-                <div className="relative text-xs text-[#555] bg-[#f5f5f5] border border-[rgba(0,0,0,0.1)] rounded p-3 mb-3 leading-relaxed pr-7">
-                  A proof of bank account is a bank issued document (e.g. voided check, bank statement, bank letter or internet banking screenshot) and should contain the following information: bank name, bank account number and account holder name.
-                  <button onClick={() => setShowProofNote(false)} className="absolute top-2 right-2 text-[#aaa] hover:text-[#555]"><X className="w-3.5 h-3.5" /></button>
+              {!isEdit && (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-xs font-medium text-[#1a2942]"><span className="text-red-500 mr-0.5">*</span>Add Proof of Bank account</span>
+                    <HelpCircle className="w-3 h-3 text-[#aaa]" />
+                  </div>
+                  {showProofNote && (
+                    <div className="relative text-xs text-[#555] bg-[#f5f5f5] border border-[rgba(0,0,0,0.1)] rounded p-3 mb-2 leading-relaxed pr-7">
+                      A proof of bank account is a bank issued document (e.g. voided check, bank statement, bank letter or internet banking screenshot) and should contain the following information: bank name, bank account number and account holder name.
+                      <button onClick={() => setShowProofNote(false)} className="absolute top-2 right-2 text-[#aaa] hover:text-[#555]"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                  )}
+                  <button className="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: CYAN }}>
+                    <Upload className="w-3.5 h-3.5" />Upload
+                  </button>
                 </div>
               )}
-              <button className="flex items-center gap-2 text-sm font-semibold text-white px-4 py-2 rounded-lg hover:opacity-90" style={{ backgroundColor: CYAN }}>
-                <Upload className="w-3.5 h-3.5" />Upload
-              </button>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(0,0,0,0.08)] bg-[#fafbfc]">
