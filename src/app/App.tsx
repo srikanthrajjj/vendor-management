@@ -610,6 +610,8 @@ export default function App() {
       swiftCode: data.swiftCode, iban: data.iban, country: data.bankCountry,
     };
     setBanks(prev => [...prev, newBank]);
+    const caseNumber = generateCaseNumber();
+    toast.success(`Your request to add bank account has been submitted. Case number: ${caseNumber}`);
   }
 
   function handleEditBank(data: FormData) {
@@ -620,6 +622,8 @@ export default function App() {
       accountHolder: data.accountHolder, routingNo: data.routingNo,
       swiftCode: data.swiftCode, iban: data.iban, country: data.bankCountry,
     } : b));
+    const caseNumber = generateCaseNumber();
+    toast.success(`Your request to update bank account has been submitted. Case number: ${caseNumber}`);
   }
 
   function handleRemove(id: number) {
@@ -636,6 +640,8 @@ export default function App() {
   function handleReinstate(id: number) {
     if (activeBanks.length >= 2) return;
     setBanks(prev => prev.map(b => b.id === id ? { ...b, status: "active" } : b));
+    const caseNumber = generateCaseNumber();
+    toast.success(`Your request to reinstate bank account has been submitted. Case number: ${caseNumber}`);
   }
 
   function handleReplace(targetId: number, replacementId: number | "new", formData?: FormData) {
@@ -666,6 +672,8 @@ export default function App() {
       // If replacementId is a number the bank is already active — no status change needed
       return updated;
     });
+    const caseNumber = generateCaseNumber();
+    toast.success(`Your request to replace bank account has been submitted. Case number: ${caseNumber}`);
   }
 
   return (
