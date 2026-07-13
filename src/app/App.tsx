@@ -110,6 +110,33 @@ function ViewBankModal({ bank, onClose }: { bank: BankEntry; onClose: () => void
   );
 }
 
+// ─── Bank Form Helpers ─────────────────────────────────────────
+function BankLabel({ required, children }: { required?: boolean; children: React.ReactNode }) {
+  return (
+    <label className="block text-xs font-medium text-[#1a2942] mb-1">
+      {required && <span className="text-red-500 mr-0.5">*</span>}{children}
+    </label>
+  );
+}
+
+function BankInput({ id, value, onChange }: { id: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+  return (
+    <input type="text" className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm text-[#333] outline-none focus:border-[#1cabe2] transition-colors" value={value} onChange={onChange} />
+  );
+}
+
+function BankSelect({ id, value, onChange, options, showEmpty }: { id: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: string[]; showEmpty?: boolean }) {
+  return (
+    <div className="relative">
+      <select className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm text-[#333] outline-none focus:border-[#1cabe2] appearance-none bg-white transition-colors" value={value} onChange={onChange}>
+        {showEmpty && <option value=""></option>}
+        {options.map(o => <option key={o}>{o}</option>)}
+      </select>
+      <ChevronDown className="w-3.5 h-3.5 text-[#888] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+    </div>
+  );
+}
+
 // ─── Add / Edit Bank Modal ───────────────────────────────────────
 function BankFormModal({ editBank, onSave, onClose }: {
   editBank?: BankEntry;
@@ -131,32 +158,6 @@ function BankFormModal({ editBank, onSave, onClose }: {
 
   const isValid = form.bankName && form.accountHolder && form.bankAccount && form.bankCountry && form.currency;
 
-  function Label({ required, children }: { required?: boolean; children: React.ReactNode }) {
-    return (
-      <label className="block text-xs font-medium text-[#1a2942] mb-1">
-        {required && <span className="text-red-500 mr-0.5">*</span>}{children}
-      </label>
-    );
-  }
-
-  function Input({ id }: { id: keyof FormData }) {
-    return (
-      <input type="text" className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm text-[#333] outline-none focus:border-[#1cabe2] transition-colors" {...field(id)} />
-    );
-  }
-
-  function Select({ id, options }: { id: keyof FormData; options: string[] }) {
-    return (
-      <div className="relative">
-        <select className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm text-[#333] outline-none focus:border-[#1cabe2] appearance-none bg-white transition-colors" {...field(id)}>
-          {id === "bankCountry" && <option value=""></option>}
-          {options.map(o => <option key={o}>{o}</option>)}
-        </select>
-        <ChevronDown className="w-3.5 h-3.5 text-[#888] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-      </div>
-    );
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
       <div className="bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden" style={{ width: "780px", maxWidth: "95vw", maxHeight: "92vh" }}>
@@ -174,14 +175,14 @@ function BankFormModal({ editBank, onSave, onClose }: {
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
             {/* Left */}
             <div className="flex flex-col gap-4">
-              <div><Label required>Name of Bank</Label><Input id="bankName" /></div>
-              <div><Label required>Bank Account</Label><Input id="bankAccount" /></div>
-              <div><Label required>Bank Country</Label><Select id="bankCountry" options={COUNTRIES} /></div>
+              <div><BankLabel required>Name of Bank</BankLabel><BankInput id="bankName" value={form.bankName} onChange={field("bankName").onChange} /></div>
+              <div><BankLabel required>Bank Account</BankLabel><BankInput id="bankAccount" value={form.bankAccount} onChange={field("bankAccount").onChange} /></div>
+              <div><BankLabel required>Bank Country</BankLabel><BankSelect id="bankCountry" value={form.bankCountry} onChange={field("bankCountry").onChange} options={COUNTRIES} showEmpty /></div>
             </div>
             {/* Right */}
             <div className="flex flex-col gap-4">
-              <div><Label required>Account Holder</Label><Input id="accountHolder" /></div>
-              <div><Label>Routing No/Branch code/Bank key</Label><Input id="routingNo" /></div>
+              <div><BankLabel required>Account Holder</BankLabel><BankInput id="accountHolder" value={form.accountHolder} onChange={field("accountHolder").onChange} /></div>
+              <div><BankLabel>Routing No/Branch code/Bank key</BankLabel><BankInput id="routingNo" value={form.routingNo} onChange={field("routingNo").onChange} /></div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <label className="text-xs font-medium text-[#1a2942]"><span className="text-red-500 mr-0.5">*</span>Bank Account Currency</label>
@@ -193,11 +194,11 @@ function BankFormModal({ editBank, onSave, onClose }: {
                     <button onClick={() => setShowCurrencyNote(false)} className="absolute top-2 right-2 text-[#aaa] hover:text-[#555]"><X className="w-3.5 h-3.5" /></button>
                   </div>
                 )}
-                <Select id="currency" options={CURRENCIES} />
+                <BankSelect id="currency" value={form.currency} onChange={field("currency").onChange} options={CURRENCIES} />
               </div>
-              <div><Label>SWIFT Code</Label><Input id="swiftCode" /></div>
-              <div><Label>Bank Account Type</Label><Select id="accountType" options={ACCOUNT_TYPES} /></div>
-              <div><Label>IBAN</Label><Input id="iban" /></div>
+              <div><BankLabel>SWIFT Code</BankLabel><BankInput id="swiftCode" value={form.swiftCode} onChange={field("swiftCode").onChange} /></div>
+              <div><BankLabel>Bank Account Type</BankLabel><BankSelect id="accountType" value={form.accountType} onChange={field("accountType").onChange} options={ACCOUNT_TYPES} /></div>
+              <div><BankLabel>IBAN</BankLabel><BankInput id="iban" value={form.iban} onChange={field("iban").onChange} /></div>
             </div>
           </div>
 
