@@ -181,17 +181,36 @@ function BankFormModal({ editBank, onSave, onClose }: {
             <HelpCircle className="w-3.5 h-3.5 text-[#aaa]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-            {/* Left */}
-            <div className="flex flex-col gap-4">
-              <div><BankLabel required>Name of Bank</BankLabel><BankInput id="bankName" value={form.bankName} onChange={field("bankName").onChange} /></div>
-              <div><BankLabel required>Bank Account</BankLabel><BankInput id="bankAccount" value={form.bankAccount} onChange={field("bankAccount").onChange} /></div>
-              <div><BankLabel required>Bank Country</BankLabel><BankSelect id="bankCountry" value={form.bankCountry} onChange={field("bankCountry").onChange} options={COUNTRIES} showEmpty /></div>
+          <div className="grid grid-cols-2 gap-x-10 gap-y-5">
+            {/* Left Column */}
+            <div className="flex flex-col gap-5">
+              <div>
+                <BankLabel required>Name of Bank</BankLabel>
+                <BankInput id="bankName" value={form.bankName} onChange={field("bankName").onChange} />
+              </div>
+              <div>
+                <BankLabel required>Account Holder</BankLabel>
+                <BankInput id="accountHolder" value={form.accountHolder} onChange={field("accountHolder").onChange} />
+              </div>
+              <div>
+                <BankLabel required>Bank Account</BankLabel>
+                <BankInput id="bankAccount" value={form.bankAccount} onChange={field("bankAccount").onChange} />
+              </div>
+              <div>
+                <BankLabel>SWIFT Code</BankLabel>
+                <BankInput id="swiftCode" value={form.swiftCode} onChange={field("swiftCode").onChange} />
+              </div>
             </div>
-            {/* Right */}
-            <div className="flex flex-col gap-4">
-              <div><BankLabel required>Account Holder</BankLabel><BankInput id="accountHolder" value={form.accountHolder} onChange={field("accountHolder").onChange} /></div>
-              <div><BankLabel>Routing No/Branch code/Bank key</BankLabel><BankInput id="routingNo" value={form.routingNo} onChange={field("routingNo").onChange} /></div>
+            {/* Right Column */}
+            <div className="flex flex-col gap-5">
+              <div>
+                <BankLabel required>Bank Country</BankLabel>
+                <BankSelect id="bankCountry" value={form.bankCountry} onChange={field("bankCountry").onChange} options={COUNTRIES} showEmpty />
+              </div>
+              <div>
+                <BankLabel>Routing No / Branch Code / Bank Key</BankLabel>
+                <BankInput id="routingNo" value={form.routingNo} onChange={field("routingNo").onChange} />
+              </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
                   <label className="text-xs font-medium text-[#1a2942]"><span className="text-red-500 mr-0.5">*</span>Bank Account Currency</label>
@@ -205,9 +224,14 @@ function BankFormModal({ editBank, onSave, onClose }: {
                 )}
                 <BankSelect id="currency" value={form.currency} onChange={field("currency").onChange} options={CURRENCIES} />
               </div>
-              <div><BankLabel>SWIFT Code</BankLabel><BankInput id="swiftCode" value={form.swiftCode} onChange={field("swiftCode").onChange} /></div>
-              <div><BankLabel>Bank Account Type</BankLabel><BankSelect id="accountType" value={form.accountType} onChange={field("accountType").onChange} options={ACCOUNT_TYPES} /></div>
-              <div><BankLabel>IBAN</BankLabel><BankInput id="iban" value={form.iban} onChange={field("iban").onChange} /></div>
+              <div>
+                <BankLabel>Bank Account Type</BankLabel>
+                <BankSelect id="accountType" value={form.accountType} onChange={field("accountType").onChange} options={ACCOUNT_TYPES} />
+              </div>
+              <div>
+                <BankLabel>IBAN</BankLabel>
+                <BankInput id="iban" value={form.iban} onChange={field("iban").onChange} />
+              </div>
             </div>
           </div>
 
