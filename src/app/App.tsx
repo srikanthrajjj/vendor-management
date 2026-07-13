@@ -247,7 +247,6 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
   const [step, setStep] = useState<"select" | "new-form" | "confirm" | "done">("select");
   const [selected, setSelected] = useState<number | "new" | null>(null);
   const [newForm, setNewForm] = useState<FormData>(BLANK_FORM);
-  const field = useField(newForm, setNewForm);
   const selectedBank = typeof selected === "number" ? otherActive.find(b => b.id === selected) : null;
 
   function handleConfirm() {
@@ -259,9 +258,20 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
     setStep("done");
   }
 
+  function handleNewFormSave(data: FormData) {
+    setNewForm(data);
+    setStep("confirm");
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
-      <div className="bg-white rounded-xl shadow-2xl overflow-hidden" style={{ width: step === "new-form" ? "680px" : "460px", maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+      {step === "new-form" && (
+        <BankFormModal
+          onSave={handleNewFormSave}
+          onClose={() => setStep("select")}
+        />
+      )}
+      <div className="bg-white rounded-xl shadow-2xl overflow-hidden" style={{ width: "460px", maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(0,0,0,0.08)] flex-shrink-0">
           <div>
@@ -343,58 +353,6 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                 style={{ backgroundColor: CYAN }}>
                 Continue
               </button>
-            </div>
-          )}
-
-          {/* Step 1b — new bank form inline */}
-          {step === "new-form" && (
-            <div className="flex flex-col gap-4">
-              <p className="text-xs text-[#666]">Fill in the new bank account details:</p>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                {([
-                  { id: "bankName" as const, label: "Name of Bank", required: true },
-                  { id: "accountHolder" as const, label: "Account Holder", required: true },
-                  { id: "bankAccount" as const, label: "Bank Account", required: true },
-                  { id: "routingNo" as const, label: "Routing / Bank Key" },
-                  { id: "swiftCode" as const, label: "SWIFT Code" },
-                  { id: "iban" as const, label: "IBAN" },
-                ]).map(({ id, label, required }) => (
-                  <div key={id}>
-                    <label className="block text-xs font-medium text-[#1a2942] mb-1">
-                      {required && <span className="text-red-500 mr-0.5">*</span>}{label}
-                    </label>
-                    <input type="text" className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm outline-none focus:border-[#1cabe2] transition-colors" value={newForm[id]} onChange={e => setNewForm(p => ({ ...p, [id]: e.target.value }))} />
-                  </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-medium text-[#1a2942] mb-1"><span className="text-red-500 mr-0.5">*</span>Currency</label>
-                  <div className="relative">
-                    <select className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm appearance-none bg-white outline-none focus:border-[#1cabe2]" {...field("currency")}>
-                      {CURRENCIES.map(c => <option key={c}>{c}</option>)}
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#888] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-[#1a2942] mb-1">Account Type</label>
-                  <div className="relative">
-                    <select className="w-full border border-[rgba(0,0,0,0.18)] rounded px-3 py-2 text-sm appearance-none bg-white outline-none focus:border-[#1cabe2]" {...field("accountType")}>
-                      {ACCOUNT_TYPES.map(t => <option key={t}>{t}</option>)}
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#888] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2 mt-2">
-                <button onClick={() => setStep("select")} className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#555] border border-[rgba(0,0,0,0.15)] hover:bg-[#f0f4f8] transition-colors">Back</button>
-                <button
-                  disabled={!newForm.bankName || !newForm.accountHolder || !newForm.bankAccount}
-                  onClick={() => setStep("confirm")}
-                  className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-                  style={{ backgroundColor: CYAN }}>
-                  Continue
-                </button>
-              </div>
             </div>
           )}
 
