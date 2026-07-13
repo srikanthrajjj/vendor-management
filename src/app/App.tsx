@@ -69,42 +69,49 @@ function useField(form: FormData, setForm: React.Dispatch<React.SetStateAction<F
 
 // ─── View Bank Modal ─────────────────────────────────────────────
 function ViewBankModal({ bank, onClose }: { bank: BankEntry; onClose: () => void }) {
-  const rows = [
-    { label: "Bank Name", value: bank.name },
-    { label: "Account Number", value: bank.account },
-    { label: "Bank Key / IFSC", value: bank.key },
-    { label: "Account Type", value: bank.type },
-    { label: "Currency", value: bank.currency },
-    { label: "Status", value: bank.isDefault ? "Default" : "Active" },
-    { label: "Account Holder", value: bank.accountHolder },
-    { label: "Bank Country", value: bank.country },
-    { label: "SWIFT Code", value: bank.swiftCode || "—" },
-    { label: "IBAN", value: bank.iban || "—" },
-  ];
+  function ReadOnlyField({ label, value }: { label: string; value: string }) {
+    return (
+      <div>
+        <label className="block text-xs font-medium text-[#1a2942] mb-1">{label}</label>
+        <div className="w-full border border-[rgba(0,0,0,0.12)] rounded px-3 py-2 text-sm text-[#333] bg-[#f8fafc]">{value || "—"}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
-      <div className="bg-white rounded-xl shadow-2xl overflow-hidden" style={{ width: "460px", maxWidth: "95vw" }}>
+      <div className="bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden" style={{ width: "780px", maxWidth: "95vw", maxHeight: "92vh" }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(0,0,0,0.08)]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(28,171,226,0.1)" }}>
-              <Landmark className="w-4 h-4" style={{ color: CYAN }} />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#1a2942]">{bank.name}</h2>
-              <p className="text-[11px] text-[#888]">Bank account details</p>
-            </div>
-          </div>
+          <h2 className="text-base font-bold text-[#1a2942]">View Bank Account</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#f0f4f8] transition-colors text-[#888]"><X className="w-4 h-4" /></button>
         </div>
-        <div className="px-6 py-2 divide-y divide-[rgba(0,0,0,0.05)]">
-          {rows.map(({ label, value }) => (
-            <div key={label} className="flex items-center justify-between py-2.5">
-              <span className="text-xs text-[#888] w-40 flex-shrink-0">{label}</span>
-              <span className="text-xs font-medium text-right text-[#1a2942]" style={label === "Status" && bank.isDefault ? { color: CYAN } : {}}>{value}</span>
+
+        <div className="overflow-y-auto flex-1 px-6 py-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm font-semibold text-[#1a2942]">Bank Details</span>
+            <HelpCircle className="w-3.5 h-3.5 text-[#aaa]" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            {/* Left */}
+            <div className="flex flex-col gap-4">
+              <ReadOnlyField label="Name of Bank" value={bank.name} />
+              <ReadOnlyField label="Bank Account" value={bank.account} />
+              <ReadOnlyField label="Bank Country" value={bank.country} />
             </div>
-          ))}
+            {/* Right */}
+            <div className="flex flex-col gap-4">
+              <ReadOnlyField label="Account Holder" value={bank.accountHolder} />
+              <ReadOnlyField label="Routing No / Branch code / Bank key" value={bank.routingNo || bank.key} />
+              <ReadOnlyField label="Bank Account Currency" value={bank.currency} />
+              <ReadOnlyField label="SWIFT Code" value={bank.swiftCode} />
+              <ReadOnlyField label="Bank Account Type" value={bank.type} />
+              <ReadOnlyField label="IBAN" value={bank.iban} />
+            </div>
+          </div>
         </div>
-        <div className="px-6 py-3 border-t border-[rgba(0,0,0,0.07)] bg-[#fafbfc] flex justify-end">
+
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[rgba(0,0,0,0.08)] bg-[#fafbfc]">
           <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white rounded-lg hover:opacity-90" style={{ backgroundColor: CYAN }}>Close</button>
         </div>
       </div>
