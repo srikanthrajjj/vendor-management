@@ -250,36 +250,22 @@ function BankFormModal({ editBank, onSave, onClose }: {
 function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
   bank: BankEntry;
   otherActive: BankEntry[];
-  onConfirm: (replacementId: number | "new", formData?: FormData) => void;
+  onConfirm: (replacementId: number) => void;
   onClose: () => void;
 }) {
-  const [step, setStep] = useState<"select" | "new-form" | "confirm" | "done">("select");
-  const [selected, setSelected] = useState<number | "new" | null>(null);
-  const [newForm, setNewForm] = useState<FormData>(BLANK_FORM);
-  const selectedBank = typeof selected === "number" ? otherActive.find(b => b.id === selected) : null;
+  const [step, setStep] = useState<"select" | "confirm" | "done">("select");
+  const [selected, setSelected] = useState<number | null>(null);
+  const selectedBank = otherActive.find(b => b.id === selected) ?? null;
 
   function handleConfirm() {
-    if (selected === "new") {
-      onConfirm("new", newForm);
-    } else if (typeof selected === "number") {
+    if (typeof selected === "number") {
       onConfirm(selected);
     }
     setStep("done");
   }
 
-  function handleNewFormSave(data: FormData) {
-    setNewForm(data);
-    setStep("confirm");
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
-      {step === "new-form" && (
-        <BankFormModal
-          onSave={handleNewFormSave}
-          onClose={() => setStep("select")}
-        />
-      )}
       <div className="bg-white rounded-xl shadow-2xl overflow-hidden" style={{ width: "460px", maxWidth: "95vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(0,0,0,0.08)] flex-shrink-0">
@@ -294,8 +280,8 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
         {step !== "done" && (
           <div className="flex items-center gap-2 px-6 pt-4 pb-1 flex-shrink-0">
             {(["select", "confirm"] as const).map((s, i) => {
-              const done = (step === "confirm" && s === "select") || (step === "new-form" && s === "select");
-              const active = step === s || (step === "new-form" && s === "select");
+              const done = step === "confirm" && s === "select";
+              const active = step === s;
               return (
                 <div key={s} className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5">
@@ -327,7 +313,7 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                 </div>
                 <span className="text-[10px] font-semibold text-orange-500 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">Being replaced</span>
               </div>
-              <p className="text-xs text-[#666] mt-1">Choose an existing account or add a new one:</p>
+              <p className="text-xs text-[#666] mt-1">Choose an existing account to replace with:</p>
               {otherActive.map(b => (
                 <button key={b.id} onClick={() => setSelected(b.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 text-left transition-all"
@@ -344,20 +330,11 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                   {selected === b.id && <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: CYAN }} />}
                 </button>
               ))}
-              <button onClick={() => setSelected("new")}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 text-left transition-all"
-                style={{ borderColor: selected === "new" ? CYAN : "rgba(0,0,0,0.1)", backgroundColor: selected === "new" ? "rgba(28,171,226,0.04)" : "white", borderStyle: "dashed" }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[#f0f4f8]">
-                  <Plus className="w-3.5 h-3.5 text-[#888]" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-xs font-semibold text-[#1a2942]">Add a new bank account</div>
-                  <div className="text-[11px] text-[#888] mt-0.5">Enter new account details</div>
-                </div>
-                {selected === "new" && <CheckCircle2 className="w-4 h-4 flex-shrink-0 ml-auto" style={{ color: CYAN }} />}
-              </button>
+              {otherActive.length === 0 && (
+                <p className="text-xs text-[#aaa] text-center py-4">No other active accounts available to replace with.</p>
+              )}
               <button disabled={selected === null}
-                onClick={() => selected === "new" ? setStep("new-form") : setStep("confirm")}
+                onClick={() => setStep("confirm")}
                 className="mt-1 w-full py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                 style={{ backgroundColor: CYAN }}>
                 Continue
@@ -387,11 +364,8 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                   </div>
                   <div className="flex-1">
                     <div className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: CYAN }}>Replacing with</div>
-                    {selected === "new" ? (
-                      <><div className="text-xs font-semibold text-[#1a2942]">{newForm.bankName}</div><div className="text-[11px] text-[#888]">{newForm.bankAccount} · {newForm.accountType}</div></>
-                    ) : (
-                      <><div className="text-xs font-semibold text-[#1a2942]">{selectedBank?.name}</div><div className="text-[11px] text-[#888]">{selectedBank?.account} · {selectedBank?.type}</div></>
-                    )}
+                    <div className="text-xs font-semibold text-[#1a2942]">{selectedBank?.name}</div>
+                    <div className="text-[11px] text-[#888]">{selectedBank?.account} · {selectedBank?.type}</div>
                   </div>
                 </div>
               </div>
@@ -400,7 +374,7 @@ function ReplaceBankModal({ bank, otherActive, onConfirm, onClose }: {
                 <p className="text-[11px] text-[#555] leading-relaxed">Any pending invoices linked to the current account will be reassigned to the replacement account.</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => setStep(selected === "new" ? "new-form" : "select")} className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#555] border border-[rgba(0,0,0,0.15)] hover:bg-[#f0f4f8] transition-colors">Back</button>
+                <button onClick={() => setStep("select")} className="flex-1 py-2.5 rounded-lg text-sm font-medium text-[#555] border border-[rgba(0,0,0,0.15)] hover:bg-[#f0f4f8] transition-colors">Back</button>
                 <button onClick={handleConfirm} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: CYAN }}>Confirm Replacement</button>
               </div>
             </div>
@@ -644,31 +618,12 @@ export default function App() {
     toast.success(`Your request to reinstate bank account has been submitted. Case number: ${caseNumber}`);
   }
 
-  function handleReplace(targetId: number, replacementId: number | "new", formData?: FormData) {
+  function handleReplace(targetId: number, replacementId: number) {
     setBanks(prev => {
       // Move the replaced bank to removed
       let updated = prev.map(b =>
         b.id === targetId ? { ...b, status: "removed" as const, isDefault: false } : b
       );
-      if (replacementId === "new" && formData) {
-        // Add the brand-new bank as active
-        const newBank: BankEntry = {
-          id: nextId++,
-          name: formData.bankName,
-          account: formData.bankAccount,
-          key: formData.routingNo || "—",
-          type: formData.accountType,
-          currency: formData.currency,
-          isDefault: updated.filter(b => b.status === "active").length === 0,
-          status: "active",
-          accountHolder: formData.accountHolder,
-          routingNo: formData.routingNo,
-          swiftCode: formData.swiftCode,
-          iban: formData.iban,
-          country: formData.bankCountry,
-        };
-        updated = [...updated, newBank];
-      }
       // If replacementId is a number the bank is already active — no status change needed
       return updated;
     });
@@ -699,7 +654,7 @@ export default function App() {
         <ReplaceBankModal
           bank={replaceBank}
           otherActive={activeBanks.filter(b => b.id !== replaceBank.id)}
-          onConfirm={(rid, fd) => handleReplace(replaceBank.id, rid, fd)}
+          onConfirm={(rid) => handleReplace(replaceBank.id, rid)}
           onClose={() => setReplaceBank(null)}
         />
       )}
