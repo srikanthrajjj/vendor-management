@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import ImportedHeader from "@/imports/Header";
+import { toast } from "sonner";
+import { Toaster } from "sonner";
 import {
   Bell, FileText, User, Briefcase, ChevronRight, ChevronDown,
   Plus, Info, Eye, MoreVertical, Landmark, X, HelpCircle,
@@ -571,6 +573,11 @@ function BankRow({ bank, removed, canRemove = true, onView, onRemove, onReinstat
 // ─── App ─────────────────────────────────────────────────────────
 let nextId = 10;
 
+function generateCaseNumber(): string {
+  const num = Math.floor(100000 + Math.random() * 900000);
+  return `VC${num}`;
+}
+
 export default function App() {
   const [activeNav, setActiveNav] = useState("profile");
   const [activeSubNav, setActiveSubNav] = useState("Banking");
@@ -614,6 +621,8 @@ export default function App() {
       setBanks(prev => prev.filter(b => b.id !== id));
     } else {
       setBanks(prev => prev.map(b => b.id === id ? { ...b, status: "removed", isDefault: false } : b));
+      const caseNumber = generateCaseNumber();
+      toast.success(`Your request to remove bank account has been submitted. Case number: ${caseNumber}`);
     }
   }
 
@@ -654,6 +663,7 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen bg-[#f0f4f8] overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <Toaster position="top-right" richColors />
 
       {/* Modals */}
       {showAddBank && (
