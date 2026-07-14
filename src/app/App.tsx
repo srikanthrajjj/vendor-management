@@ -549,8 +549,6 @@ function BankRow({ bank, removed, pendingReinstatement, pendingVerification, can
             <button onClick={onReinstate} className="text-xs font-semibold px-3 py-1 rounded-md border transition-colors hover:bg-[#f0f4f8]" style={{ borderColor: CYAN, color: CYAN }}>
               Reinstate
             </button>
-          ) : pendingReinstatement ? (
-            <span className="text-xs font-semibold px-3 py-1 rounded-md bg-amber-50 text-amber-600 border border-amber-200">Pending</span>
           ) : (
             <button onClick={onView} className="p-1 rounded hover:bg-[#f0f4f8] transition-colors text-[#888]">
               <Eye className="w-3.5 h-3.5" />
