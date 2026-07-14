@@ -21,7 +21,7 @@ type BankEntry = {
   type: string;
   currency: string;
   isDefault: boolean;
-  status: "active" | "removed" | "pending_reinstatement";
+  status: "active" | "removed" | "pending_reinstatement" | "pending_verification";
   accountHolder: string;
   routingNo: string;
   swiftCode: string;
@@ -517,8 +517,8 @@ function KebabMenu({ onEdit, onReplace }: { onEdit?: () => void; onReplace?: () 
 }
 
 // ─── Bank Row ────────────────────────────────────────────────────
-function BankRow({ bank, removed, pendingReinstatement, canRemove = true, onView, onRemove, onReinstate, onEdit, onReplace }: {
-  bank: BankEntry; removed?: boolean; pendingReinstatement?: boolean; canRemove?: boolean;
+function BankRow({ bank, removed, pendingReinstatement, pendingVerification, canRemove = true, onView, onRemove, onReinstate, onEdit, onReplace }: {
+  bank: BankEntry; removed?: boolean; pendingReinstatement?: boolean; pendingVerification?: boolean; canRemove?: boolean;
   onView?: () => void; onRemove?: () => void; onReinstate?: () => void;
   onEdit?: () => void; onReplace?: () => void;
 }) {
@@ -534,6 +534,9 @@ function BankRow({ bank, removed, pendingReinstatement, canRemove = true, onView
           {pendingReinstatement && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">Pending Reinstatement</span>
           )}
+          {pendingVerification && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">Pending Verification</span>
+          )}
         </div>
       </td>
       <td className="px-5 py-3 text-xs text-[#555] font-mono">{bank.account}</td>
@@ -546,7 +549,7 @@ function BankRow({ bank, removed, pendingReinstatement, canRemove = true, onView
             <button onClick={onReinstate} className="text-xs font-semibold px-3 py-1 rounded-md border transition-colors hover:bg-[#f0f4f8]" style={{ borderColor: CYAN, color: CYAN }}>
               Reinstate
             </button>
-          ) : pendingReinstatement ? (
+          ) : pendingReinstatement || pendingVerification ? (
             <span className="text-xs font-semibold px-3 py-1 rounded-md bg-amber-50 text-amber-600 border border-amber-200">Pending</span>
           ) : (
             <button onClick={onView} className="p-1 rounded hover:bg-[#f0f4f8] transition-colors text-[#888]">
@@ -591,7 +594,7 @@ export default function App() {
   const [deleteBank, setDeleteBank] = useState<BankEntry | null>(null);
   const [addNewForReplace, setAddNewForReplace] = useState<BankEntry | null>(null);
 
-  const activeBanks = banks.filter(b => b.status === "active");
+  const activeBanks = banks.filter(b => b.status === "active" || b.status === "pending_verification");
   const removedBanks = banks.filter(b => b.status === "removed" || b.status === "pending_reinstatement");
   const canAddBank = activeBanks.length < 2;
 
@@ -599,7 +602,7 @@ export default function App() {
     const newBank: BankEntry = {
       id: nextId++, name: data.bankName, account: data.bankAccount,
       key: data.routingNo || "—", type: data.accountType, currency: data.currency,
-      isDefault: activeBanks.length === 0, status: "active",
+      isDefault: activeBanks.length === 0, status: "pending_verification",
       accountHolder: data.accountHolder, routingNo: data.routingNo,
       swiftCode: data.swiftCode, iban: data.iban, country: data.bankCountry,
     };
@@ -612,7 +615,7 @@ export default function App() {
     const newBank: BankEntry = {
       id: nextId++, name: data.bankName, account: data.bankAccount,
       key: data.routingNo || "—", type: data.accountType, currency: data.currency,
-      isDefault: false, status: "active",
+      isDefault: false, status: "pending_verification",
       accountHolder: data.accountHolder, routingNo: data.routingNo,
       swiftCode: data.swiftCode, iban: data.iban, country: data.bankCountry,
     };
@@ -806,6 +809,7 @@ export default function App() {
                       activeBanks.map(b => (
                         <BankRow key={b.id} bank={b}
                           canRemove={activeBanks.length > 1}
+                          pendingVerification={b.status === "pending_verification"}
                           onView={() => setViewBank(b)}
                           onRemove={() => setDeleteBank(b)}
                           onEdit={() => setEditBank(b)}
