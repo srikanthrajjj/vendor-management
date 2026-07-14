@@ -608,7 +608,7 @@ export default function App() {
     };
     setBanks(prev => [...prev, newBank]);
     const caseNumber = generateCaseNumber();
-    toast.success(`Your request to add bank account has been submitted. Case number: ${caseNumber}`);
+    toast.success(`Your request to add a new bank account has been submitted. Case number: ${caseNumber}. This may take 2-3 business days for verification and approval.`);
   }
 
   function handleAddBankForReplace(data: FormData) {
@@ -621,7 +621,7 @@ export default function App() {
     };
     setBanks(prev => [...prev, newBank]);
     const caseNumber = generateCaseNumber();
-    toast.success(`Your request to add bank account has been submitted. Case number: ${caseNumber}`);
+    toast.success(`Your request to add a new bank account has been submitted. Case number: ${caseNumber}. This may take 2-3 business days for verification and approval.`);
     setAddNewForReplace(null);
     setReplaceBank(newBank);
   }
