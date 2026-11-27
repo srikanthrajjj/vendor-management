@@ -201,7 +201,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
           <Stepper step={step} setStep={setStep} done={[true, detailsOk, docsOk, false]} />
 
 
-          <Card className="mb-24">
+          <Card className="mb-4">
             {step === 0 && <Requirements o={o} />}
 
             {step === 1 && (
@@ -288,7 +288,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
           </Card>
 
           {/* Sticky action bar */}
-          <div className="sticky bottom-0 -mx-6 -mb-6 px-6 py-3 bg-white/95 backdrop-blur border-t border-[rgba(0,0,0,0.08)] flex items-center gap-3 flex-wrap z-10">
+          <div className="sticky bottom-4 px-5 py-3 bg-white rounded-xl border border-[rgba(0,0,0,0.08)] flex items-center gap-3 flex-wrap z-10" style={{ boxShadow: "0 4px 18px rgba(20,90,140,0.14)" }}>
             <Btn variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</Btn>
             <span className="text-xs text-[#888] mr-auto" aria-live="polite">{savedAt ? `Saved ${fmtDateTime(savedAt)}` : "Changes are saved as you type"}</span>
             <Btn variant="secondary" onClick={() => { saveDraft(o.id); setSavedAt(new Date().toISOString()); ok("Draft saved"); }}>Save draft</Btn>
