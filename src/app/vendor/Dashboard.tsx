@@ -1,11 +1,8 @@
-import { ArrowRight, Check, Clock, Droplets, FilePen, FileText, Handshake, LayoutGrid, Laptop, Megaphone, MessageSquareWarning, Monitor, Receipt, Scale, Stethoscope, BookOpen } from "lucide-react";
+import { ArrowRight, Check, Clock, FilePen, FileText, Handshake, LayoutGrid, Megaphone, MessageSquareWarning, Receipt, BookOpen } from "lucide-react";
 import heroImg from "@/assets/hero-child.png";
 import { OPPS, Opp, VENDOR, actionItems, closingSoon, countdown, fmtDate, isClosed, startResponse, statusOf, useVendor } from "./store";
 import { Btn, CYAN, Nav, StatusPill } from "./ui";
 
-const ICON: Record<string, typeof Monitor> = {
-  rfp0001115: Monitor, rfp0001121: Scale, rfp0001123: Droplets, rfp0001119: Laptop, rfp0001122: Stethoscope,
-};
 const panel = "bg-white/90 rounded-2xl border border-[rgba(28,120,170,0.14)] backdrop-blur-sm";
 const panelShadow = { boxShadow: "0 2px 14px rgba(20,90,140,0.07)" };
 
@@ -33,12 +30,10 @@ function Clipboard() {
 function Row({ o, go }: { o: Opp; go: Nav }) {
   const s = useVendor();
   const r = s.resp[o.id];
-  const Icon = ICON[o.id] || FileText;
   const soon = closingSoon(o);
   return (
     <li className="flex items-center gap-3 px-1 py-3.5 border-t first:border-0 border-[rgba(0,0,0,0.07)]">
       <button onClick={() => go("opportunities", o.id, "tender")} className="flex items-center gap-4 flex-1 min-w-0 text-left rounded-lg focus-visible:outline-2 focus-visible:outline-[#1cabe2] group">
-        <span className="w-11 h-11 rounded-xl bg-[#e3f2fb] text-[#1c8fc4] grid place-items-center flex-shrink-0"><Icon className="w-5 h-5" aria-hidden /></span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold text-[#1a2942] truncate group-hover:text-[#0b6d96]">{o.title}</span>
           <span className="block text-xs text-[#6b7c8e]">{o.no} · {o.loc}</span>
@@ -67,11 +62,11 @@ export default function Dashboard({ go }: { go: Nav }) {
   const fresh = mine.length === 0;
   const submitted = mine.some(o => s.resp[o.id].status !== "Draft");
 
-  const stats: { label: string; n: number; Icon: typeof Monitor; to: string; hi?: boolean }[] = [
+  const stats: { label: string; n: number; Icon: typeof LayoutGrid; to: string; hi?: boolean }[] = [
     { label: "Open opportunities", n: open.length, Icon: LayoutGrid, to: "opportunities", hi: true },
     { label: "My applications", n: mine.length, Icon: FileText, to: "applications" },
     { label: "Active contracts", n: s.contracts.length, Icon: Handshake, to: "contracts" },
-    { label: "Pending invoices", n: 0, Icon: Receipt, to: "invoices" },
+    { label: "Pending invoices", n: 0, Icon: Receipt, to: "" },
   ];
   const steps = [
     { t: "Create your vendor account", d: "", done: true, to: "" },
@@ -118,13 +113,15 @@ export default function Dashboard({ go }: { go: Nav }) {
 
         {/* Stats */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          {stats.map(({ label, n, Icon, to, hi }) => (
-            <button key={label} onClick={() => go(to)} className={`${panel} flex items-center gap-4 px-5 py-4 text-left transition hover:border-[#1cabe2] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-[#1cabe2]`}
+          {stats.map(({ label, n, Icon, to, hi }) => {
+            const Tag = to ? "button" : "div";
+            return (
+            <Tag key={label} onClick={to ? () => go(to) : undefined} className={`${panel} flex items-center gap-4 px-5 py-4 text-left transition ${to ? "hover:border-[#1cabe2] hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-[#1cabe2]" : ""}`}
               style={{ ...panelShadow, ...(hi ? { background: "#e1f1fa", borderColor: "#9fd4ee" } : {}) }}>
               <span className={`w-12 h-12 rounded-xl grid place-items-center flex-shrink-0 ${hi ? "bg-[#c9e6f6] text-[#1c8fc4]" : "bg-[#eaf1f6] text-[#4a5e72]"}`}><Icon className="w-6 h-6" aria-hidden /></span>
               <span><span className="block text-[28px] font-extrabold text-[#0f1f38] leading-none tabular-nums">{n}</span><span className="block text-sm text-[#37495f] mt-1">{label}</span></span>
-            </button>
-          ))}
+            </Tag>);
+          })}
         </div>
 
         {/* Opportunities + checklist */}

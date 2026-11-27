@@ -59,9 +59,8 @@ const navItems = [
   { id: "opportunities", label: "Opportunities", icon: Megaphone },
   { id: "applications", label: "My Applications", icon: ClipboardList },
   { id: "contracts", label: "My Contracts", icon: FileSignature },
-  { id: "invoices", label: "My Invoices", icon: FileText },
   { id: "notifications", label: "My Notifications", icon: Bell },
-  { id: "profile", label: "My Profile", icon: User, children: ["Basic Information","Experience","Contact","Education","Professional Skills","Banking","Supporting Documents"] },
+  { id: "profile", label: "My Profile", icon: User, children: ["Banking"] },
 ];
 
 // ─── Field helper ────────────────────────────────────────────────
@@ -755,10 +754,6 @@ export default function App() {
               );
             })}
           </nav>
-          <div className="mx-3 mb-4 px-3 py-2.5 rounded-lg border border-[rgba(0,0,0,0.08)] bg-[#f8fafc] flex items-center justify-between gap-2">
-            <span className="text-xs text-[#666]">Need help?</span>
-            <button className="text-xs font-semibold hover:underline" style={{ color: CYAN }}>Contact Support</button>
-          </div>
         </aside>
 
         {/* ── Main ── */}
