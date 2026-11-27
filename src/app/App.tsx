@@ -7,7 +7,10 @@ import {
   Bell, FileText, User, Briefcase, ChevronRight, ChevronDown,
   Plus, Info, Eye, MoreVertical, Landmark, X, HelpCircle,
   Upload, Pencil, RefreshCw, CheckCircle2, ArrowRight, Check, Trash2, AlertTriangle,
+  LayoutDashboard, Megaphone, ClipboardList, FileSignature,
 } from "lucide-react";
+import VendorModule from "@/app/vendor";
+import { actionItems, unreadCount, useVendor } from "@/app/vendor/store";
 
 const CYAN = "#1cabe2";
 const NAVY = "#1a3055";
@@ -52,6 +55,10 @@ const COUNTRIES = ["Afghanistan","Australia","Canada","France","Germany","India"
 const PREVIEW_COLS: string[] = [];
 
 const navItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "opportunities", label: "Opportunities", icon: Megaphone },
+  { id: "applications", label: "My Applications", icon: ClipboardList },
+  { id: "contracts", label: "My Contracts", icon: FileSignature },
   { id: "invoices", label: "My Invoices", icon: FileText },
   { id: "notifications", label: "My Notifications", icon: Bell },
   { id: "cases", label: "My Cases", icon: Briefcase },
@@ -580,9 +587,16 @@ function generateCaseNumber(): string {
 }
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState("profile");
+  const [activeNav, setActiveNav] = useState("dashboard");
+  const [oppId, setOppId] = useState<string | null>(null);
+  const [oppTab, setOppTab] = useState("tender");
+  const vendor = useVendor();
+  const badges: Record<string, number> = { applications: actionItems(vendor).filter(a => a.kind !== "closing").length, notifications: unreadCount(vendor) };
+  function go(section: string, id?: string | null, tab?: string) {
+    setActiveNav(section); setOppId(id ?? null); setOppTab(tab ?? "tender");
+  }
   const [activeSubNav, setActiveSubNav] = useState("Banking");
-  const [profileExpanded, setProfileExpanded] = useState(true);
+  const [profileExpanded, setProfileExpanded] = useState(false);
   const [banks, setBanks] = useState<BankEntry[]>(INITIAL_BANKS);
 
   const [showAddBank, setShowAddBank] = useState(false);
@@ -715,11 +729,12 @@ export default function App() {
               const isExpanded = hasChildren && (isActive || profileExpanded);
               return (
                 <div key={item.id}>
-                  <button onClick={() => { setActiveNav(item.id); if (hasChildren) setProfileExpanded(!profileExpanded || !isActive); }}
+                  <button onClick={() => { go(item.id); if (hasChildren) setProfileExpanded(!profileExpanded || !isActive); }}
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors text-sm"
                     style={{ color: isActive ? CYAN : "#444", fontWeight: isActive ? 600 : 400, backgroundColor: isActive && !hasChildren ? "rgba(28,171,226,0.07)" : "transparent", borderLeft: isActive ? `3px solid ${CYAN}` : "3px solid transparent" }}>
                     <Icon className="w-4 h-4 flex-shrink-0" style={{ color: isActive ? CYAN : "#888" }} />
                     <span className="flex-1">{item.label}</span>
+                    {badges[item.id] > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white grid place-items-center" style={{ backgroundColor: "#e87a1e" }} aria-label={`${badges[item.id]} need attention`}>{badges[item.id]}</span>}
                     {hasChildren && <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200" style={{ color: "#aaa", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />}
                   </button>
                   {hasChildren && isExpanded && (
@@ -747,6 +762,11 @@ export default function App() {
         </aside>
 
         {/* ── Main ── */}
+        {activeNav !== "profile" ? (
+          <main className="flex-1 overflow-y-auto">
+            <VendorModule section={activeNav} oppId={oppId} tab={oppTab} go={go} />
+          </main>
+        ) : (
         <main className="flex-1 overflow-y-auto">
           <div className="px-8 py-6 bg-white border-b border-[rgba(0,0,0,0.08)]">
             <h1 className="text-lg font-bold text-[#1a2942]">My Profile</h1>
@@ -853,6 +873,7 @@ export default function App() {
             </div>
           </div>
         </main>
+        )}
       </div>
     </div>
   );
