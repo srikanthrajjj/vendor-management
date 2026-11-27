@@ -60,7 +60,7 @@ const navItems = [
   { id: "applications", label: "My Applications", icon: ClipboardList },
   { id: "contracts", label: "My Contracts", icon: FileSignature },
   { id: "notifications", label: "My Notifications", icon: Bell },
-  { id: "profile", label: "My Profile", icon: User },
+  { id: "profile", label: "My Profile", icon: User, children: ["Basic Information","Experience","Contact","Education","Professional Skills","Banking","Supporting Documents"] },
 ];
 
 // ─── Field helper ────────────────────────────────────────────────
@@ -737,18 +737,23 @@ export default function App() {
                     {hasChildren && <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200" style={{ color: "#aaa", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />}
                   </button>
                   {hasChildren && isExpanded && (
-                    <div className="pb-1">
+                    <ul className="pb-1 pt-0.5">
                       {item.children!.map(child => {
-                        const isChildActive = activeSubNav === child;
-                        return (
-                          <button key={child} onClick={() => { setActiveNav(item.id); setActiveSubNav(child); }}
-                            className="w-full text-left text-xs px-10 py-2 transition-colors"
-                            style={{ color: isChildActive ? CYAN : "#666", fontWeight: isChildActive ? 600 : 400, backgroundColor: isChildActive ? "rgba(28,171,226,0.07)" : "transparent" }}>
-                            {child}
-                          </button>
+                        const live = child === "Banking";
+                        const isChildActive = live && activeSubNav === child;
+                        return live ? (
+                          <li key={child}>
+                            <button onClick={() => { setActiveNav(item.id); setActiveSubNav(child); }}
+                              className="mx-3 w-[calc(100%-1.5rem)] text-left text-[13px] rounded-lg pl-[3.1rem] pr-3 py-2 transition-colors hover:bg-[#f1f7fb]"
+                              style={{ color: isChildActive ? "#0b5878" : "#3a4a5c", fontWeight: isChildActive ? 600 : 500, backgroundColor: isChildActive ? "#e1f0fa" : undefined }}>
+                              {child}
+                            </button>
+                          </li>
+                        ) : (
+                          <li key={child} className="mx-3 text-[13px] pl-[3.1rem] pr-3 py-2 text-[#8a97a6] cursor-default select-none">{child}</li>
                         );
                       })}
-                    </div>
+                    </ul>
                   )}
                 </div>
               );
