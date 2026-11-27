@@ -5,7 +5,6 @@ import OpportunityDetail from "./OpportunityDetail";
 import MyApplications from "./MyApplications";
 import Notifications from "./Notifications";
 import Contracts from "./Contracts";
-import HMSimulator from "./HMSimulator";
 import { oppById } from "./store";
 import { Card, Empty, Nav, PageHeader } from "./ui";
 
@@ -27,5 +26,5 @@ export default function VendorModule({ section, oppId, tab, go }: { section: str
       <div className="p-6"><Card><Empty title="Coming next">This section is not modelled in this prototype.</Empty></Card></div>
     </>
   );
-  return <div ref={ref}>{body}<HMSimulator currentOpp={oppId} /></div>;
+  return <div ref={ref}>{body}</div>;
 }
