@@ -65,8 +65,9 @@ export const oppById = (id: string | null | undefined) => OPPS.find(o => o.id ==
 /* ───────── Seed ───────── */
 const ago = (d: number) => new Date(Date.now() - d * DAY).toISOString();
 const ahead = (d: number) => new Date(Date.now() + d * DAY).toISOString();
-function seed(): State {
+function seed(sample = false): State {
   const f = (name: string, size: number, d: number): FileMeta => ({ name, size, at: ago(d) });
+  if (!sample) return { v: 2, contracts: [], pre: {}, resp: {}, notes: [] };
   return {
     v: 2, contracts: [], pre: {},
     resp: {
@@ -91,7 +92,7 @@ function seed(): State {
 }
 
 /* ───────── Store ───────── */
-const KEY = "vendor-portal-v2";
+const KEY = "vendor-portal-v3";
 function load(): State {
   try { const r = localStorage.getItem(KEY); if (r) { const p = JSON.parse(r); if (p?.v === 2) return p; } } catch { /* ignore */ }
   return seed();
@@ -123,14 +124,14 @@ export const fmtSize = (n: number) => (n > 1048576 ? (n / 1048576).toFixed(1) + 
 export const money = (n: string | number) => Number(n).toLocaleString("en-US");
 export const unreadCount = (s: State) => s.notes.filter(n => !n.read).length;
 
-export type Check = { key: string; label: string; ok: boolean; step: 0 | 1 };
+export type Check = { key: string; label: string; ok: boolean; step: 1 | 2 };
 export function checklist(o: Opp, r: Resp): Check[] {
   const c: Check[] = [
-    { key: "price", label: "Offered price entered", ok: Number(r.price) > 0, step: 0 },
-    { key: "validity", label: "Offer validity entered", ok: Number(r.validity) > 0, step: 0 },
-    { key: "note", label: "Cover note written", ok: r.note.trim().length > 0, step: 0 },
+    { key: "price", label: "Offered price entered", ok: Number(r.price) > 0, step: 1 },
+    { key: "validity", label: "Offer validity entered", ok: Number(r.validity) > 0, step: 1 },
+    { key: "note", label: "Cover note written", ok: r.note.trim().length > 0, step: 1 },
   ];
-  o.docs.filter(d => DOCS[d].mandatory).forEach(d => c.push({ key: d, label: `${DOCS[d].label} attached`, ok: !!r.docs[d], step: 1 }));
+  o.docs.filter(d => DOCS[d].mandatory).forEach(d => c.push({ key: d, label: `${DOCS[d].label} attached`, ok: !!r.docs[d], step: 2 }));
   return c;
 }
 
@@ -192,7 +193,7 @@ export function addComment(id: string, text: string, file?: string) {
   });
 }
 export function markAllRead() { commit(s => s.notes.forEach(n => (n.read = true))); }
-export function resetDemo() { commit(s => { Object.assign(s, seed()); }); }
+export function resetDemo(sample = false) { commit(s => { Object.assign(s, seed(sample)); }); }
 
 /* Hiring Manager simulation */
 export type HMAction = "review" | "clarify" | "comment" | "award" | "reject";

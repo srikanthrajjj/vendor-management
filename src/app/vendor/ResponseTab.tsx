@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { Check, ChevronDown, FileText, Paperclip, Upload, X, AlertCircle } from "lucide-react";
 import {
-  DOCS, Opp, Resp, CURRENCIES, canEdit, checklist, fmtDate, fmtDateTime, fmtSize, isClosed, money,
+  DOCS, CRITERIA, countdown, Opp, Resp, CURRENCIES, canEdit, checklist, fmtDate, fmtDateTime, fmtSize, isClosed, money,
   removeDoc, saveDraft, setDoc, startResponse, submitResponse, updateResp,
 } from "./store";
 import { Btn, Card, CardHead, Field, Nav, inputCls, CYAN, ok, fail } from "./ui";
 
-const STEPS = ["Details", "Documents", "Review & submit"];
+const STEPS = ["Requirements", "Details", "Documents", "Review & submit"];
 const ALLOWED = /\.(pdf|docx?|xlsx?|zip|png|jpe?g)$/i;
 
 /* Progress tracker shared by editable and read-only views */
@@ -62,7 +62,7 @@ function Summary({ o, r, onEdit }: { o: Opp; r: Resp; onEdit?: (step: number) =>
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold text-[#1a2942]">Proposal details</h3>
-          {onEdit && <Btn size="sm" variant="ghost" onClick={() => onEdit(0)}>Edit</Btn>}
+          {onEdit && <Btn size="sm" variant="ghost" onClick={() => onEdit(1)}>Edit</Btn>}
         </div>
         <dl className="grid grid-cols-[170px_minmax(0,1fr)] gap-y-2 text-xs">
           {row("Total offered price", r.price ? `${r.currency} ${money(r.price)}` : "")}
@@ -74,7 +74,7 @@ function Summary({ o, r, onEdit }: { o: Opp; r: Resp; onEdit?: (step: number) =>
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold text-[#1a2942]">Documents</h3>
-          {onEdit && <Btn size="sm" variant="ghost" onClick={() => onEdit(1)}>Edit</Btn>}
+          {onEdit && <Btn size="sm" variant="ghost" onClick={() => onEdit(2)}>Edit</Btn>}
         </div>
         <ul className="text-xs divide-y divide-[rgba(0,0,0,0.06)] border border-[rgba(0,0,0,0.08)] rounded-lg">
           {o.docs.map(d => { const f = r.docs[d]; return (
@@ -86,6 +86,34 @@ function Summary({ o, r, onEdit }: { o: Opp; r: Resp; onEdit?: (step: number) =>
         </ul>
       </div>
     </div>
+  );
+}
+
+
+/* Step 1: what you need before you start */
+function Requirements({ o }: { o: Opp }) {
+  const mand = o.docs.filter(d => DOCS[d].mandatory), opt = o.docs.filter(d => !DOCS[d].mandatory);
+  return (
+    <>
+      <CardHead title="Before you start" sub="About 15 minutes. Have these ready, or save a draft and come back." />
+      <div className="p-5 flex flex-col gap-5">
+        <div className="grid sm:grid-cols-3 gap-3 text-xs">
+          {([["Deadline", `${fmtDate(o.deadline)} · ${countdown(o)}`], ["Estimated budget", `${o.cur} ${o.budget}`], ["Delivery", o.duration]] as const).map(([k, v]) => (
+            <div key={k} className="rounded-lg bg-[#f4f9fc] px-3.5 py-2.5"><p className="text-[#888]">{k}</p><p className="font-semibold text-[#1a2942]">{v}</p></div>))}
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-[#1a2942] mb-2">You will need</h3>
+          <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
+            {mand.map(d => <li key={d} className="flex items-start gap-2 text-xs text-[#333]"><FileText className="w-3.5 h-3.5 mt-0.5 text-[#1cabe2] flex-shrink-0" aria-hidden /><span><b>{DOCS[d].label}</b><br /><span className="text-[#888]">{DOCS[d].hint}</span></span></li>)}
+          </ul>
+          {opt.length > 0 && <p className="text-xs text-[#888] mt-3">Optional: {opt.map(d => DOCS[d].label).join(", ")}.</p>}
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-[#1a2942] mb-2">How you will be evaluated</h3>
+          <div className="flex gap-2 flex-wrap">{CRITERIA.map(([k, w]) => <span key={k} className="rounded-full bg-[#eef2f8] px-3 py-1 text-xs text-[#1a2942]"><b>{w}%</b> {k}</span>)}</div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -113,8 +141,8 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
   const checks = checklist(o, r);
   const failing = checks.filter(c => !c.ok);
   const edit = canEdit(r);
-  const detailsOk = checks.filter(c => c.step === 0).every(c => c.ok);
-  const docsOk = checks.filter(c => c.step === 1).every(c => c.ok);
+  const detailsOk = checks.filter(c => c.step === 1).every(c => c.ok);
+  const docsOk = checks.filter(c => c.step === 2).every(c => c.ok);
   const bad = (k: string, msg: string) => (touched[k] && !checks.find(c => c.key === k)?.ok ? msg : undefined);
   const set = (p: Parameters<typeof updateResp>[1]) => { updateResp(o.id, p); setSavedAt(new Date().toISOString()); };
   const reqDocs = o.docs.filter(d => DOCS[d].mandatory);
@@ -154,7 +182,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
         <Card><CardHead title="Your submitted response" sub={r.ref ? `Reference ${r.ref}` : undefined} /><div className="p-5"><Summary o={o} r={r} /></div></Card>
       ) : (
         <>
-          <Stepper step={step} setStep={setStep} done={[detailsOk, docsOk, false]} />
+          <Stepper step={step} setStep={setStep} done={[true, detailsOk, docsOk, false]} />
 
           <Card className="mb-4">
             <button onClick={() => setHowOpen(!howOpen)} aria-expanded={howOpen} className="w-full flex items-center justify-between px-5 py-3 text-left">
@@ -172,7 +200,9 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
           </Card>
 
           <Card className="mb-24">
-            {step === 0 && (
+            {step === 0 && <Requirements o={o} />}
+
+            {step === 1 && (
               <>
                 <CardHead title="Proposal details" sub="Fields marked * are required." />
                 <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
@@ -200,7 +230,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
               </>
             )}
 
-            {step === 1 && (
+            {step === 2 && (
               <>
                 <CardHead title="Document upload" sub="Attach each required document. PDF, Word, Excel, ZIP or image, up to 10 MB."
                   right={<div className="text-right text-xs"><span className="font-semibold text-[#1a2942]">{have} of {reqDocs.length}</span> <span className="text-[#888]">mandatory attached</span>
@@ -230,7 +260,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
               </>
             )}
 
-            {step === 2 && (
+            {step === 3 && (
               <>
                 <CardHead title="Review & submit" sub="Check everything before you submit. You can go back to change any part." />
                 <div className="p-5 flex flex-col gap-6">
@@ -260,8 +290,8 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
             <Btn variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>Back</Btn>
             <span className="text-xs text-[#888] mr-auto" aria-live="polite">{savedAt ? `Saved ${fmtDateTime(savedAt)}` : "Changes are saved as you type"}</span>
             <Btn variant="secondary" onClick={() => { saveDraft(o.id); setSavedAt(new Date().toISOString()); ok("Draft saved"); }}>Save draft</Btn>
-            {step < 2
-              ? <Btn onClick={() => { if (step === 0) setTouched(t => ({ ...t, price: true, validity: true, note: true })); setStep(step + 1); }}>Next</Btn>
+            {step < 3
+              ? <Btn onClick={() => { if (step === 1) setTouched(t => ({ ...t, price: true, validity: true, note: true })); setStep(step + 1); }}>{step === 0 ? "Start my response" : "Next"}</Btn>
               : <Btn disabled={failing.length > 0 || !agree} onClick={submit}>{r.status === "Need Clarification" ? "Resubmit response" : "Submit response"}</Btn>}
           </div>
         </>

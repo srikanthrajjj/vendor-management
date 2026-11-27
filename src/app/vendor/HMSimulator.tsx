@@ -32,7 +32,7 @@ export default function HMSimulator({ currentOpp }: { currentOpp: string | null 
                 <Btn size="sm" variant="secondary" onClick={() => run("reject", "Marked Not Awarded")}>Not awarded</Btn>
               </div>
             </>)}
-          <button onClick={() => { resetDemo(); ok("Demo data reset"); }} className="mt-3 text-xs text-[#0b6d96] underline">Reset demo data</button>
+          <div className="mt-3 flex gap-4 text-xs"><button onClick={() => { resetDemo(); ok("Reset to a new vendor with no applications"); }} className="text-[#0b6d96] underline">Reset (no applications)</button><button onClick={() => { resetDemo(true); ok("Loaded sample applications"); }} className="text-[#0b6d96] underline">Load sample applications</button></div>
         </div>)}
       <button onClick={() => setOpen(!open)} aria-expanded={open} className="flex items-center gap-2 rounded-full bg-[#1a2942] text-white text-xs font-semibold px-4 py-2.5 shadow-lg hover:opacity-90">
         <UserCog className="w-4 h-4" aria-hidden />Simulate Hiring Manager
