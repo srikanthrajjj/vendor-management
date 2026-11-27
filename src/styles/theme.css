@@ -182,3 +182,7 @@
     line-height: 1.5;
   }
 }
+
+/* Hide scrollbars but keep scrolling (sidebar, page area, tab strips) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

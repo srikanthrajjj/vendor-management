@@ -7,7 +7,10 @@ import {
   Bell, FileText, User, Briefcase, ChevronRight, ChevronDown,
   Plus, Info, Eye, MoreVertical, Landmark, X, HelpCircle,
   Upload, Pencil, RefreshCw, CheckCircle2, ArrowRight, Check, Trash2, AlertTriangle,
+  Home, Megaphone, ClipboardList, FileSignature,
 } from "lucide-react";
+import VendorModule from "@/app/vendor";
+import { actionItems, unreadCount, useVendor } from "@/app/vendor/store";
 
 const CYAN = "#1cabe2";
 const NAVY = "#1a3055";
@@ -52,9 +55,11 @@ const COUNTRIES = ["Afghanistan","Australia","Canada","France","Germany","India"
 const PREVIEW_COLS: string[] = [];
 
 const navItems = [
-  { id: "invoices", label: "My Invoices", icon: FileText },
+  { id: "dashboard", label: "Dashboard", icon: Home },
+  { id: "opportunities", label: "Opportunities", icon: Megaphone },
+  { id: "applications", label: "My Applications", icon: ClipboardList },
+  { id: "contracts", label: "My Contracts", icon: FileSignature },
   { id: "notifications", label: "My Notifications", icon: Bell },
-  { id: "cases", label: "My Cases", icon: Briefcase },
   { id: "profile", label: "My Profile", icon: User, children: ["Basic Information","Experience","Contact","Education","Professional Skills","Banking","Supporting Documents"] },
 ];
 
@@ -580,9 +585,18 @@ function generateCaseNumber(): string {
 }
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState("profile");
+  const [activeNav, setActiveNav] = useState("dashboard");
+  const [oppId, setOppId] = useState<string | null>(null);
+  const [oppTab, setOppTab] = useState("tender");
+  const vendor = useVendor();
+  const badges: Record<string, number> = { applications: actionItems(vendor).filter(a => a.kind !== "closing").length, notifications: unreadCount(vendor) };
+  function go(section: string, id?: string | null, tab?: string) {
+    setActiveNav(section); setOppId(id ?? null); setOppTab(tab ?? "tender");
+  }
   const [activeSubNav, setActiveSubNav] = useState("Banking");
-  const [profileExpanded, setProfileExpanded] = useState(true);
+  const [profileExpanded, setProfileExpanded] = useState(false);
+  // Its sub-menu opens when you land on My Profile and closes when you leave; the header toggles it.
+  useEffect(() => { setProfileExpanded(activeNav === "profile"); }, [activeNav]);
   const [banks, setBanks] = useState<BankEntry[]>(INITIAL_BANKS);
 
   const [showAddBank, setShowAddBank] = useState(false);
@@ -706,48 +720,56 @@ export default function App() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar ── */}
-        <aside className="flex-shrink-0 bg-white border-r border-[rgba(0,0,0,0.08)] flex flex-col overflow-y-auto" style={{ width: "220px", boxShadow: "1px 0 4px rgba(0,0,0,0.04)" }}>
+        <aside className="flex-shrink-0 bg-white border-r border-[rgba(0,0,0,0.08)] flex flex-col overflow-y-auto no-scrollbar" style={{ width: "220px", boxShadow: "1px 0 4px rgba(0,0,0,0.04)" }}>
           <nav className="flex-1 py-3">
             {navItems.map(item => {
               const Icon = item.icon;
               const isActive = activeNav === item.id;
               const hasChildren = !!item.children;
-              const isExpanded = hasChildren && (isActive || profileExpanded);
+              const isExpanded = hasChildren && profileExpanded;
               return (
                 <div key={item.id}>
-                  <button onClick={() => { setActiveNav(item.id); if (hasChildren) setProfileExpanded(!profileExpanded || !isActive); }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors text-sm"
-                    style={{ color: isActive ? CYAN : "#444", fontWeight: isActive ? 600 : 400, backgroundColor: isActive && !hasChildren ? "rgba(28,171,226,0.07)" : "transparent", borderLeft: isActive ? `3px solid ${CYAN}` : "3px solid transparent" }}>
-                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: isActive ? CYAN : "#888" }} />
-                    <span className="flex-1">{item.label}</span>
+                  {item.id === "profile" && <div className="my-2 mx-6 border-t border-[rgba(0,0,0,0.08)]" />}
+                  <button onClick={() => { if (hasChildren && isActive) setProfileExpanded(p => !p); else go(item.id); }}
+                    className="mx-3 w-[calc(100%-1.5rem)] rounded-xl flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors text-sm hover:bg-[#f1f7fb]"
+                    style={{ color: isActive ? "#0b5878" : "#3a4a5c", fontWeight: isActive ? 600 : 500, backgroundColor: isActive ? "#e1f0fa" : undefined }}>
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" style={{ color: isActive ? CYAN : "#6b7c8e" }} />
+                    <span className="flex-1 whitespace-nowrap">{item.label}</span>
+                    {badges[item.id] > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white grid place-items-center" style={{ backgroundColor: "#e87a1e" }} aria-label={`${badges[item.id]} need attention`}>{badges[item.id]}</span>}
                     {hasChildren && <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200" style={{ color: "#aaa", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />}
                   </button>
                   {hasChildren && isExpanded && (
-                    <div className="pb-1">
+                    <ul className="pb-1 pt-0.5">
                       {item.children!.map(child => {
-                        const isChildActive = activeSubNav === child;
-                        return (
-                          <button key={child} onClick={() => { setActiveNav(item.id); setActiveSubNav(child); }}
-                            className="w-full text-left text-xs px-10 py-2 transition-colors"
-                            style={{ color: isChildActive ? CYAN : "#666", fontWeight: isChildActive ? 600 : 400, backgroundColor: isChildActive ? "rgba(28,171,226,0.07)" : "transparent" }}>
-                            {child}
-                          </button>
+                        const live = child === "Banking";
+                        const isChildActive = live && activeSubNav === child;
+                        return live ? (
+                          <li key={child}>
+                            <button onClick={() => { setActiveNav(item.id); setActiveSubNav(child); }}
+                              className="mx-3 w-[calc(100%-1.5rem)] text-left text-[13px] rounded-lg pl-[3.1rem] pr-3 py-2 transition-colors hover:bg-[#f1f7fb]"
+                              style={{ color: isChildActive ? "#0b5878" : "#3a4a5c", fontWeight: isChildActive ? 600 : 500, backgroundColor: isChildActive ? "#e1f0fa" : undefined }}>
+                              {child}
+                            </button>
+                          </li>
+                        ) : (
+                          <li key={child} className="mx-3 text-[13px] pl-[3.1rem] pr-3 py-2 text-[#8a97a6] cursor-default select-none">{child}</li>
                         );
                       })}
-                    </div>
+                    </ul>
                   )}
                 </div>
               );
             })}
           </nav>
-          <div className="mx-3 mb-4 px-3 py-2.5 rounded-lg border border-[rgba(0,0,0,0.08)] bg-[#f8fafc] flex items-center justify-between gap-2">
-            <span className="text-xs text-[#666]">Need help?</span>
-            <button className="text-xs font-semibold hover:underline" style={{ color: CYAN }}>Contact Support</button>
-          </div>
         </aside>
 
         {/* ── Main ── */}
-        <main className="flex-1 overflow-y-auto">
+        {activeNav !== "profile" ? (
+          <main className="flex-1 overflow-y-auto no-scrollbar" style={{ background: "linear-gradient(180deg,#e6f2fa 0,#f3f8fc 340px,#f5f9fd 100%)" }}>
+            <VendorModule section={activeNav} oppId={oppId} tab={oppTab} go={go} />
+          </main>
+        ) : (
+        <main className="flex-1 overflow-y-auto no-scrollbar">
           <div className="px-8 py-6 bg-white border-b border-[rgba(0,0,0,0.08)]">
             <h1 className="text-lg font-bold text-[#1a2942]">My Profile</h1>
             <p className="text-xs text-[#888] mt-0.5">Manage your profile, supporting documents and more</p>
@@ -853,6 +875,7 @@ export default function App() {
             </div>
           </div>
         </main>
+        )}
       </div>
     </div>
   );
