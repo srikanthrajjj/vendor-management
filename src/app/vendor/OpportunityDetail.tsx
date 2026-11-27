@@ -133,7 +133,7 @@ export default function OpportunityDetail({ o, tab, go }: { o: Opp; tab: string;
             <h1 className="text-xl font-bold text-[#1a2942] leading-snug flex-1 min-w-[260px]">{o.title}</h1>
             <StatusPill status={st} />
           </div>
-          <div role="tablist" className="flex gap-1 border-b border-[rgba(0,0,0,0.1)] mb-5 overflow-x-auto">
+          <div role="tablist" className="flex gap-1 border-b border-[rgba(0,0,0,0.1)] mb-5 overflow-x-auto overflow-y-hidden no-scrollbar">
             {TABS.map(([k, label]) => (
               <button key={k} role="tab" aria-selected={t === k} onClick={() => go("opportunities", o.id, k)}
                 className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide -mb-px border-b-[3px] whitespace-nowrap"

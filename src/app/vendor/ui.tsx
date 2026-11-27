@@ -106,3 +106,21 @@ export const inputCls = (err?: boolean) =>
 /* The host Toaster never auto-dismisses, so vendor toasts set their own duration. */
 export const ok = (m: string, ms = 3500) => toast.success(m, { duration: ms });
 export const fail = (m: string) => toast.error(m, { duration: 5000 });
+
+/* Filter tabs: large pills, the active one filled in brand cyan */
+export function PillTabs<T extends string>({ items, value, onChange, label }: { items: { key: T; label: string; count?: number }[]; value: T; onChange: (k: T) => void; label: string }) {
+  return (
+    <div role="tablist" aria-label={label} className="flex gap-2 px-5 py-4 border-b border-[rgba(0,0,0,0.07)] overflow-x-auto overflow-y-hidden no-scrollbar">
+      {items.map(it => {
+        const on = it.key === value;
+        return (
+          <button key={it.key} role="tab" aria-selected={on} onClick={() => onChange(it.key)}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1cabe2] ${on ? "bg-[#1cabe2] text-[#06243a]" : "bg-[#eef4f9] text-[#3a4a5c] hover:bg-[#dcecf7]"}`}>
+            {it.label}
+            {it.count !== undefined && <span className={`min-w-[22px] rounded-full px-1.5 py-0.5 text-[11px] leading-none text-center font-bold ${on ? "bg-white/70 text-[#06243a]" : "bg-white text-[#5c7490]"}`}>{it.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

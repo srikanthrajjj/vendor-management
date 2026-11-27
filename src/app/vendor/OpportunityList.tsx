@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowUpDown, ChevronRight, Search } from "lucide-react";
 import { OPPS, Opp, closingSoon, countdown, fmtDate, isClosed, statusOf, useVendor } from "./store";
-import { Card, Empty, Nav, PageHeader, StatusPill, CYAN, inputCls } from "./ui";
+import { Card, Empty, Nav, PageHeader, PillTabs, StatusPill, inputCls } from "./ui";
 
 type Tab = "all" | "open" | "mine" | "soon";
 type SortKey = "title" | "loc" | "deadline";
@@ -63,18 +63,7 @@ export default function OpportunityList({ go }: { go: Nav }) {
         </Card>
 
         <Card>
-          <div role="tablist" aria-label="Opportunity views" className="flex gap-1 px-3 border-b border-[rgba(0,0,0,0.07)] overflow-x-auto">
-            {tabs.map(([k, label]) => {
-              const n = filtered.filter(tabOk[k]).length, on = tab === k;
-              return (
-                <button key={k} role="tab" aria-selected={on} onClick={() => setTab(k)}
-                  className="px-3 py-3 text-xs font-semibold whitespace-nowrap -mb-px border-b-2 transition-colors"
-                  style={{ color: on ? "#1a2942" : "#777", borderColor: on ? CYAN : "transparent" }}>
-                  {label} <span className="ml-1 rounded-full bg-[#eef2f8] px-1.5 py-0.5 text-[10px] text-[#5c7490]">{n}</span>
-                </button>
-              );
-            })}
-          </div>
+          <PillTabs label="Opportunity views" value={tab} onChange={setTab} items={tabs.map(([k, label]) => ({ key: k, label, count: filtered.filter(tabOk[k]).length }))} />
           <div className="hidden md:grid grid-cols-[minmax(0,3fr)_1fr_1.3fr_1.3fr_24px] gap-4 px-5 py-2.5 bg-[#f8fafc] text-[11px] font-semibold text-[#999]">
             <span>{th("title", "Tender Position")}</span><span>{th("loc", "Location")}</span><span>{th("deadline", "Deadline for Submission")}</span><span>My status</span><span />
           </div>

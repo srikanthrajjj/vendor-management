@@ -720,7 +720,7 @@ export default function App() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar ── */}
-        <aside className="flex-shrink-0 bg-white border-r border-[rgba(0,0,0,0.08)] flex flex-col overflow-y-auto" style={{ width: "220px", boxShadow: "1px 0 4px rgba(0,0,0,0.04)" }}>
+        <aside className="flex-shrink-0 bg-white border-r border-[rgba(0,0,0,0.08)] flex flex-col overflow-y-auto no-scrollbar" style={{ width: "220px", boxShadow: "1px 0 4px rgba(0,0,0,0.04)" }}>
           <nav className="flex-1 py-3">
             {navItems.map(item => {
               const Icon = item.icon;
@@ -765,11 +765,11 @@ export default function App() {
 
         {/* ── Main ── */}
         {activeNav !== "profile" ? (
-          <main className="flex-1 overflow-y-auto" style={{ background: "linear-gradient(180deg,#e6f2fa 0,#f3f8fc 340px,#f5f9fd 100%)" }}>
+          <main className="flex-1 overflow-y-auto no-scrollbar" style={{ background: "linear-gradient(180deg,#e6f2fa 0,#f3f8fc 340px,#f5f9fd 100%)" }}>
             <VendorModule section={activeNav} oppId={oppId} tab={oppTab} go={go} />
           </main>
         ) : (
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto no-scrollbar">
           <div className="px-8 py-6 bg-white border-b border-[rgba(0,0,0,0.08)]">
             <h1 className="text-lg font-bold text-[#1a2942]">My Profile</h1>
             <p className="text-xs text-[#888] mt-0.5">Manage your profile, supporting documents and more</p>

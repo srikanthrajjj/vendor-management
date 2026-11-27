@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { OPPS, Status, fmtDate, money, useVendor } from "./store";
-import { Btn, Card, Empty, Nav, PageHeader, StatusPill, CYAN } from "./ui";
+import { Btn, Card, Empty, Nav, PageHeader, PillTabs, StatusPill } from "./ui";
 
 const GROUPS: [string, Status[]][] = [
   ["All", []], ["Draft", ["Draft"]], ["Submitted", ["Applied", "Under Review"]],
@@ -17,15 +17,10 @@ export default function MyApplications({ go }: { go: Nav }) {
       <PageHeader title="My Applications" sub="Every response you started, with its review status" right={<Btn variant="secondary" onClick={() => go("opportunities")}>Browse opportunities</Btn>} />
       <div className="p-6">
         <Card>
-          <div role="tablist" className="flex gap-1 px-3 border-b border-[rgba(0,0,0,0.07)] overflow-x-auto">
-            {GROUPS.map(([label, sts], i) => {
-              const n = all.filter(o => !sts.length || sts.includes(s.resp[o.id].status)).length;
-              return <button key={label} role="tab" aria-selected={g === i} onClick={() => setG(i)} className="px-3 py-3 text-xs font-semibold whitespace-nowrap -mb-px border-b-2"
-                style={{ color: g === i ? "#1a2942" : "#777", borderColor: g === i ? CYAN : "transparent" }}>{label} <span className="ml-1 rounded-full bg-[#eef2f8] px-1.5 py-0.5 text-[10px] text-[#5c7490]">{n}</span></button>;
-            })}
-          </div>
+          <PillTabs label="Application status" value={String(g)} onChange={k => setG(Number(k))}
+            items={GROUPS.map(([label, sts], i) => ({ key: String(i), label, count: all.filter(o => !sts.length || sts.includes(s.resp[o.id].status)).length }))} />
           {rows.length === 0 ? <Empty title="Nothing here yet">Start a response from an opportunity and it will appear in this list.</Empty> : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto no-scrollbar">
               <table className="w-full">
                 <thead><tr className="bg-[#f8fafc]">{["Opportunity", "Reference", "Submitted", "Offer", "Status", ""].map(h => <th key={h} className="text-left px-5 py-2.5 text-[11px] font-semibold text-[#999] whitespace-nowrap">{h}</th>)}</tr></thead>
                 <tbody>
