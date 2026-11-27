@@ -3,7 +3,7 @@ import { CalendarClock, FileText, Globe2, Hash, Paperclip, Send, Timer } from "l
 import {
   CRITERIA, DOCS, Opp, canEdit, countdown, fmtDate, fmtDateTime, isClosed, addComment, startResponse, statusOf, useVendor, closingSoon,
 } from "./store";
-import ResponseTab from "./ResponseTab";
+import ResponseTab, { HowTo } from "./ResponseTab";
 import { Btn, Card, CardHead, Crumbs, Nav, StatusPill, CYAN, inputCls, ok, fail } from "./ui";
 
 const TABS = [["tender", "Tender"], ["response", "Response"], ["clarifications", "Clarifications"], ["history", "History"]] as const;
@@ -159,6 +159,7 @@ export default function OpportunityDetail({ o, tab, go }: { o: Opp; tab: string;
             {cta}
             {hint && <p className="text-[11px] text-[#888] mt-2.5">{hint}</p>}
           </Card>
+          {t === "response" && canEdit(r) && <HowTo />}
         </aside>
       </div>
     </div>

@@ -117,13 +117,29 @@ function Requirements({ o }: { o: Opp }) {
   );
 }
 
+/* Shown in the right rail while a response can be edited */
+export function HowTo() {
+  return (
+    <Card className="p-5 mt-4">
+      <h2 className="text-sm font-bold text-[#1a2942] mb-2">How to attach &amp; submit documents</h2>
+      <ol className="list-decimal pl-4 text-xs text-[#555] flex flex-col gap-1.5">
+        <li>Review the required documents on the Requirements step.</li>
+        <li>Fill in your proposal details.</li>
+        <li>Upload each document with its Upload button, or drag a file onto its row (max 10 MB).</li>
+        <li>Save the draft any time and return later.</li>
+        <li>Check the Review step, then submit.</li>
+        <li>You can replace any document before submitting.</li>
+      </ol>
+    </Card>
+  );
+}
+
 export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav }) {
   const [step, setStep] = useState(0);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [agree, setAgree] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
-  const [howOpen, setHowOpen] = useState(false);
   const fileRef = useRef<Record<string, HTMLInputElement | null>>({});
 
   if (!r) {
@@ -184,20 +200,6 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
         <>
           <Stepper step={step} setStep={setStep} done={[true, detailsOk, docsOk, false]} />
 
-          <Card className="mb-4">
-            <button onClick={() => setHowOpen(!howOpen)} aria-expanded={howOpen} className="w-full flex items-center justify-between px-5 py-3 text-left">
-              <span className="text-sm font-bold text-[#1a2942]">How to attach &amp; submit documents</span>
-              <ChevronDown className={`w-4 h-4 text-[#888] transition-transform ${howOpen ? "rotate-180" : ""}`} aria-hidden />
-            </button>
-            {howOpen && (
-              <ol className="list-decimal pl-10 pr-5 pb-4 text-xs text-[#555] flex flex-col gap-1">
-                <li>Review the required documents on the Tender tab.</li><li>Fill in your proposal details.</li>
-                <li>Upload each document with its Upload button, or drag a file onto its row (max 10 MB).</li>
-                <li>Save the draft any time and return later.</li><li>Check the Review step, then submit.</li>
-                <li>You can replace any document before submitting.</li>
-              </ol>
-            )}
-          </Card>
 
           <Card className="mb-24">
             {step === 0 && <Requirements o={o} />}
