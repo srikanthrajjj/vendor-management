@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor Portal Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: ServiceNow-style portal shell. Cyan banner, tile home, list + tabbed detail with a sticky overview rail. */
+:root{
+  --font:'Noto Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --bg:#f3f7fa; --surface:#fff; --surface2:#eef4f8; --ink:#1b2a38; --muted:#5a6b7b; --line:#d9e2ea;
+  --brand:#1cabe2; --primary:#0077b0; --on-primary:#fff; --link:#00709e;
+  --navy:#0b2a5b; --on-navy:#fff;
+  --ok:#00833d; --ok-bg:#e0f3e8; --warn:#8a5a00; --warn-bg:#fff2cc; --alert:#b4440c; --alert-bg:#fde6d8;
+  --bad:#b3261e; --bad-bg:#fbe3e1; --info:#00587f; --info-bg:#dbf0fa; --neutral-bg:#e6ecf1;
+  --shadow:0 1px 2px rgba(11,42,91,.08),0 4px 14px rgba(11,42,91,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1620; --surface:#142231; --surface2:#1a2b3c; --ink:#e7eef5; --muted:#9db0c2; --line:#27394b;
+  --brand:#1cabe2; --primary:#2db6ea; --on-primary:#04202e; --link:#5cc8f2; --navy:#0a1f44;
+  --ok:#4cc885; --ok-bg:#12342380; --warn:#f2c14e; --warn-bg:#3a2e0e; --alert:#f59a68; --alert-bg:#3b2214;
+  --bad:#f08a83; --bad-bg:#3d1a18; --info:#7dd3f5; --info-bg:#0f3347; --neutral-bg:#223445;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1620; --surface:#142231; --surface2:#1a2b3c; --ink:#e7eef5; --muted:#9db0c2; --line:#27394b;
+  --brand:#1cabe2; --primary:#2db6ea; --on-primary:#04202e; --link:#5cc8f2; --navy:#0a1f44;
+  --ok:#4cc885; --ok-bg:#12342380; --warn:#f2c14e; --warn-bg:#3a2e0e; --alert:#f59a68; --alert-bg:#3b2214;
+  --bad:#f08a83; --bad-bg:#3d1a18; --info:#7dd3f5; --info-bg:#0f3347; --neutral-bg:#223445;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--link)}
+h1,h2,h3{line-height:1.25;text-wrap:balance;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.wrap{width:100%;max-width:1240px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.muted{color:var(--muted)}
+
+/* shell */
+.topbar{background:var(--surface);border-bottom:1px solid var(--line);height:44px;display:flex;align-items:center}
+.topbar .wrap{display:flex;align-items:center;gap:12px;color:var(--muted)}
+.topbar small{font-size:12px}
+.banner{background:var(--brand);color:#fff}
+.banner .wrap{display:flex;align-items:center;gap:20px;min-height:84px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:14px;color:#fff;text-decoration:none}
+.logo-slot{border:1.5px dashed rgba(255,255,255,.85);border-radius:6px;padding:6px 12px;font-weight:700;font-size:13px;letter-spacing:.04em;line-height:1.2;text-align:center}
+.logo-slot small{display:block;font-weight:500;font-size:10px;opacity:.9;letter-spacing:0}
+.brand .sep{width:2px;height:30px;background:#fff;opacity:.9}
+.brand b{font-size:18px;font-weight:700}
+.nav{margin-left:auto;display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.nav a{color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:6px}
+.nav a:hover,.nav a[aria-current="page"]{background:rgba(255,255,255,.22)}
+.bell{position:relative}
+.badge{position:absolute;top:0;right:0;background:#e2231a;color:#fff;border-radius:99px;font-size:11px;min-width:18px;height:18px;display:grid;place-items:center;padding:0 4px;font-weight:700}
+.crumbs{padding-block:18px 6px;font-size:13px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+main{flex:1;padding-bottom:48px}
+footer{background:var(--brand);color:#fff;padding-block:28px 22px}
+footer .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
+footer h3{font-size:15px;margin-bottom:8px}
+footer p{margin:2px 0;font-size:13px;opacity:.95}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--primary);background:var(--primary);color:var(--on-primary);font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;padding:10px 18px;border-radius:4px;cursor:pointer;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn.sec{background:transparent;color:var(--link);border-color:var(--link)}
+.btn.sm{padding:6px 12px;font-size:12px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--link)}
+.btn[disabled],.btn[aria-disabled="true"]{background:var(--neutral-bg);border-color:var(--neutral-bg);color:var(--muted);cursor:not-allowed;filter:none}
+.vh:focus-visible + .btn{outline:3px solid var(--brand);outline-offset:2px}
+.btn.block{width:100%}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.p-Available{background:var(--info-bg);color:var(--info)}
+.p-Draft{background:var(--neutral-bg);color:var(--muted)}
+.p-Applied{background:var(--info-bg);color:var(--primary)}
+.p-Under{background:var(--warn-bg);color:var(--warn)}
+.p-Need{background:var(--alert-bg);color:var(--alert)}
+.p-Awarded{background:var(--ok-bg);color:var(--ok)}
+.p-NotAwarded,.p-Closed{background:var(--bad-bg);color:var(--bad)}
+.p-Closed{background:var(--neutral-bg);color:var(--muted)}
+
+/* home */
+.hello{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-block:26px 8px}
+.hello h1{font-size:26px}
+.strip{display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-size:13px;text-decoration:none;color:var(--ink);font-weight:600}
+.chip b{color:var(--primary)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:26px;padding-block:22px}
+.tile{text-decoration:none;color:inherit;display:block}
+.tile .art{height:150px;position:relative;overflow:hidden;display:grid;place-items:center;color:#fff}
+.tile .art::before,.tile .art::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.16)}
+.tile .art::before{width:170px;height:170px;left:-50px;bottom:-80px}
+.tile .art::after{width:110px;height:110px;right:-30px;top:-40px}
+.tile .art svg{position:relative;z-index:1}
+.tile h2{font-size:20px;margin:14px 0 4px}
+.tile p{margin:0;color:var(--muted);font-size:13px}
+.tile:hover h2{color:var(--link)}
+.tag-new{position:absolute;top:10px;left:10px;z-index:2;background:#fff;color:#0b2a5b;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.tile .badge{top:10px;right:10px}
+
+/* filter + list */
+.hero{background:var(--navy);color:var(--on-navy);border-radius:6px;padding:20px 22px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.hero label{display:block;font-size:12px;margin-bottom:6px}
+.hero .in{position:relative}
+.hero input,.hero select{width:100%;height:44px;border-radius:3px;border:0;padding:0 40px 0 12px;background:#fff;color:#1b2a38}
+.hero select{padding-right:12px}
+.hero svg{position:absolute;right:12px;top:12px;color:#1b2a38}
+.list{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);overflow:hidden}
+.lh,.lr{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,1.2fr) minmax(0,1.2fr);gap:16px;padding:16px 20px;align-items:center}
+.lh{background:var(--surface);border-bottom:1px solid var(--line);font-weight:700;font-size:13px}
+.lh button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px}
+.lh button:focus-visible{outline:3px solid var(--brand)}
+.lr{border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.lr:last-child{border-bottom:0}
+.lr:hover{background:var(--surface2)}
+.lr .ref{font-size:12px;font-weight:700;color:var(--link)}
+.lr .t{font-weight:700;font-size:15px}
+.lr .n{font-size:12px;color:var(--muted)}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+
+/* detail */
+.detail{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:40px;align-items:start;padding-top:10px}
+.detail h1{font-size:34px;font-weight:700;letter-spacing:-.01em;margin-bottom:18px}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
+.tabs a{padding:10px 14px;text-decoration:none;color:var(--link);font-weight:600;font-size:14px;letter-spacing:.02em;text-transform:uppercase;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a[aria-current="page"]{color:var(--ink);border-color:var(--brand)}
+.tabs .cnt{background:var(--alert);color:#fff;border-radius:99px;font-size:11px;padding:0 7px;margin-left:6px}
+.rail{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px;box-shadow:var(--shadow)}
+.rail h2{font-size:17px;margin-bottom:12px}
+.rail dl{margin:0 0 18px;display:grid;grid-template-columns:auto 1fr;gap:10px 14px;font-size:13px}
+.rail dt{color:var(--muted);display:flex;gap:8px;align-items:center}
+.rail dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.rail hr{border:0;border-top:1px solid var(--line);margin:0 0 16px}
+.rail .hint{font-size:12px;color:var(--muted);margin:10px 0 0}
+.sect{margin-bottom:26px}
+.sect h2{font-size:18px;margin-bottom:8px}
+.sect p{margin:0 0 10px;max-width:70ch}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-block:10px 4px}
+.kv div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.kv small{display:block;color:var(--muted);font-size:12px}
+.kv b{font-size:15px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+.tbl th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.bar{height:8px;background:var(--neutral-bg);border-radius:9px;overflow:hidden;min-width:80px}
+.bar i{display:block;height:100%;background:var(--brand)}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;background:var(--neutral-bg);color:var(--muted)}
+.tag.req{background:var(--alert-bg);color:var(--alert)}
+
+/* tracker */
+.track{display:flex;margin:0 0 24px;padding:0;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.track li{flex:1;padding:12px 14px;font-size:12px;color:var(--muted);border-right:1px solid var(--line);display:flex;gap:10px;align-items:center;min-width:0}
+.track li:last-child{border-right:0}
+.track .dot{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700}
+.track .done{color:var(--ink)}
+.track .done .dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.track .now{color:var(--ink);font-weight:700}
+.track .now .dot{border-color:var(--primary);color:var(--primary)}
+.track .flag .dot{border-color:var(--alert);background:var(--alert-bg);color:var(--alert)}
+.track .flag{color:var(--alert)}
+.track .bad .dot{background:var(--bad);border-color:var(--bad);color:#fff}
+
+/* response */
+.note{border-radius:6px;padding:12px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;font-size:13px}
+.note.info{background:var(--info-bg);color:var(--info)}
+.note.warn{background:var(--alert-bg);color:var(--alert)}
+.note.ok{background:var(--ok-bg);color:var(--ok)}
+.note.bad{background:var(--bad-bg);color:var(--bad)}
+.note.neutral{background:var(--neutral-bg);color:var(--ink)}
+.howto{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 20px;margin-bottom:24px}
+.howto h2{font-size:18px;margin-bottom:8px}
+.howto ol{margin:0;padding-left:20px;font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:24px}
+.card h2{font-size:18px;margin-bottom:14px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-weight:600;font-size:13px}
+.field input,.field select,.field textarea{border:1.5px solid var(--line);background:var(--surface);border-radius:4px;padding:9px 12px;min-width:0;width:100%}
+.field textarea{min-height:110px;resize:vertical}
+.field input:disabled,.field select:disabled,.field textarea:disabled{background:var(--surface2);color:var(--muted)}
+.field.err input,.field.err textarea{border-color:var(--bad)}
+.emsg{color:var(--bad);font-size:12px;font-weight:600}
+.docrow{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1.2fr) auto;gap:14px;align-items:center;padding:14px;border:1.5px dashed var(--line);border-radius:6px;margin-bottom:10px;background:var(--surface)}
+.docrow.drag{border-color:var(--brand);background:var(--info-bg)}
+.docrow.err{border-color:var(--bad)}
+.docrow small{display:block;color:var(--muted);font-size:12px}
+.docrow .file{display:flex;gap:8px;align-items:center;min-width:0;font-size:13px}
+.docrow .file span{overflow-wrap:anywhere}
+.docrow .act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.meter{display:flex;align-items:center;gap:12px;font-size:13px;margin-bottom:14px}
+.meter .bar{flex:1;max-width:260px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.confirm{background:var(--info-bg);color:var(--info);border-radius:6px;padding:14px 16px;margin-top:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.confirm p{margin:0;flex:1;min-width:220px}
+
+/* thread + history */
+.thread{display:flex;flex-direction:column;gap:12px;margin-bottom:18px}
+.msg{max-width:78%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.msg.me{align-self:flex-end;background:var(--info-bg);border-color:transparent}
+.msg .who{font-size:12px;font-weight:700;margin-bottom:2px}
+.msg .when{font-size:11px;color:var(--muted);margin-top:4px}
+.msg p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.hist{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.hist li{position:relative;padding:0 0 18px 18px}
+.hist li::before{content:"";position:absolute;left:-23px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--bg)}
+.hist time{display:block;font-size:12px;color:var(--muted)}
+
+/* dashboard */
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-block:12px 22px}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.sum b{font-size:28px;font-variant-numeric:tabular-nums;display:block;line-height:1.1}
+.sum span{font-size:12px;color:var(--muted)}
+.page-h{display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap;margin-block:14px 6px}
+.page-h h1{font-size:28px}
+
+/* prototype drawer */
+#demoBtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:30;background:var(--navy);color:#fff;border:0;border-radius:99px;padding:11px 18px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#demo{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:30;width:min(380px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.3);padding:16px;max-height:70vh;overflow:auto}
+#demo h3{font-size:15px;margin-bottom:2px}
+#demo p{margin:0 0 10px;font-size:12px;color:var(--muted)}
+#demo .row{display:flex;flex-wrap:wrap;gap:8px;margin-block:10px}
+#demo select,#demo textarea{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:4px;padding:8px 10px;margin-bottom:8px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:#12202d;color:#fff;padding:10px 18px;border-radius:6px;font-weight:600;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+
+@media (max-width:900px){
+  .detail{grid-template-columns:minmax(0,1fr);gap:20px}
+  .rail{position:static;order:-1}
+  .detail h1{font-size:26px}
+}
+@media (max-width:720px){
+  .lh{display:none}
+  .lr{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+  .lr>:first-child{grid-column:1/-1}
+  .docrow{grid-template-columns:minmax(0,1fr)}
+  .docrow .act{justify-content:flex-start}
+  .track{flex-direction:column}
+  .track li{border-right:0;border-bottom:1px solid var(--line)}
+  .msg{max-width:100%}
+  .nav{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+  <small>Prototype · data is stored only in this browser</small>
+</div></div>
+
+<header class="banner"><div class="wrap">
+  <a class="brand" href="#home" aria-label="Vendor Portal home">
+    <!-- Drop the official logo asset here; it is not bundled. -->
+    <span class="logo-slot">unicef<small>for every child</small></span>
+    <span class="sep"></span><b>Vendor Portal</b>
+  </a>
+  <nav class="nav" aria-label="Main">
+    <a href="#home" data-nav="home">Home</a>
+    <a href="#opportunities" data-nav="opportunities">Opportunities</a>
+    <a href="#applications" data-nav="applications">My Applications</a>
+    <a href="#notifications" class="bell" data-nav="notifications" aria-label="Notifications">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 16v-5a6 6 0 10-12 0v5l-2 2h16z M10 21h4"/></svg>
+      <span class="badge" id="bellBadge" hidden>0</span>
+    </a>
+  </nav>
+</div></header>
+
+<main><div class="wrap" id="view"></div></main>
+
+<footer><div class="wrap">
+  <div><h3>Vendor Portal</h3><p>Prototype build for design review</p></div>
+  <div><h3>Home</h3><p>What we do</p><p>Work with us</p></div>
+  <div><h3>About us</h3><p>Procurement principles</p><p>Vendor code of conduct</p></div>
+  <div><h3>Related sites</h3><p>Supply catalogue</p><p>Open tenders</p></div>
+</div></footer>
+
+<button id="demoBtn" aria-expanded="false" aria-controls="demo">Simulate Hiring Manager</button>
+<aside id="demo" hidden aria-label="Prototype tools"></aside>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+var $=function(s,r){return (r||document).querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var nowISO=function(){return new Date().toISOString()};
+var daysAgo=function(n){var d=new Date();d.setDate(d.getDate()-n);return d.toISOString()};
+var plusDays=function(n){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+n);return d};
+var fmtD=function(d){return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})};
+var fmtDT=function(d){return new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})};
+var isoDay=function(d){var x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+var size=function(n){return n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB'};
+var money=function(n){return Number(n).toLocaleString('en-US')};
+
+var ICON={
+ file:'<path d="M6 2h8l5 5v15H6z M14 2v5h5 M9 13h6 M9 17h6"/>',
+ megaphone:'<path d="M3 11v3a1 1 0 001 1h3l8 4V6L7 10H4a1 1 0 00-1 1z M19 9a4 4 0 010 6"/>',
+ bell:'<path d="M18 16v-5a6 6 0 10-12 0v5l-2 2h16z M10 21h4"/>',
+ refresh:'<path d="M20 11a8 8 0 00-14-4L4 9 M4 4v5h5 M4 13a8 8 0 0014 4l2-2 M20 20v-5h-5"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+ receipt:'<path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z M9 8h6 M9 12h6"/>',
+ list:'<path d="M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+ pin:'<path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18 M8 3v4 M16 3v4"/>',
+ hour:'<path d="M6 2h12 M6 22h12 M7 2c0 6 10 6 10 10s-10 4-10 10 M17 2c0 6-10 6-10 10"/>',
+ doc:'<path d="M6 2h8l5 5v15H6z M14 2v5h5"/>',
+ up:'<path d="M12 16V4 M7 9l5-5 5 5 M4 20h16"/>',
+ sort:'<path d="M8 4v16 M4 16l4 4 4-4 M16 20V4 M12 8l4-4 4 4"/>'
+};
+function ic(n,s,extra){s=s||18;return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" '+(extra||'')+'>'+ICON[n]+'</svg>'}
+
+/* ---------- data ---------- */
+var DOCS={
+ tech:{l:'Technical Proposal',m:1,h:'Methodology, work plan, team and delivery approach. PDF, max 10 MB.'},
+ fin:{l:'Financial Proposal',m:1,h:'Itemised price schedule in the offered currency. PDF or XLSX.'},
+ reg:{l:'Company Registration Certificate',m:1,h:'Valid certificate of incorporation or equivalent.',profile:'Company-Registration-Certificate.pdf'},
+ tax:{l:'Tax Compliance Certificate',m:1,h:'Issued within the last 12 months.',profile:'Tax-Compliance-Certificate.pdf'},
+ coc:{l:'Signed Vendor Code of Conduct',m:1,h:'Signed and dated by an authorised signatory.'},
+ ref:{l:'Past Performance References',m:0,h:'Up to three comparable contracts delivered in the last five years.'},
+ cert:{l:'Quality / Product Certifications',m:0,h:'ISO, CE, WHO prequalification or equivalent.'}
+};
+var CRIT=[['Technical compliance',40],['Price competitiveness',30],['Relevant experience',20],['Delivery timeline',10]];
+var OPPS=[
+ {id:'rfp0001115',no:'RFP0001115',title:'Procurement and Deployment of Enterprise Document Management System (EDMS)',ref:'PRC0001022',loc:'USA',pub:-9,due:14,cur:'INR',budget:'1,20,00,000',type:'Open Tender',dur:'12 Months (Implementation) + 3 Years Annual Maintenance & Support (AMC)',
+  sum:'This procurement seeks proposals from qualified technology vendors for the supply, implementation, configuration, and ongoing support of an Enterprise Document Management System (EDMS). The solution will provide secure document storage, version control, workflow automation, electronic approvals, advanced search capabilities, and seamless integration with existing enterprise applications. The objective is to improve operational efficiency, ensure regulatory compliance, strengthen information security, and enable centralized management of digital documents across the organization.',
+  docs:['tech','fin','reg','tax','coc','ref']},
+ {id:'rfp0001121',no:'RFP0001121',title:'Procurement of Mobile Legal Support Units',ref:'PRC0001018',loc:'USA',pub:-20,due:8,cur:'USD',budget:'2,600,000',type:'Open Tender',dur:'9 Months delivery + 2 Years warranty',
+  sum:'Supply of fully fitted mobile units that bring legal aid and child-protection case support to remote communities, including vehicle, onboard communications equipment, and operator training.',docs:['tech','fin','reg','tax','coc','cert']},
+ {id:'rfp0001123',no:'RFP0001123',title:'Supply of Water Purification and Sanitation Equipment',ref:'PRC0001024',loc:'AFG',pub:-14,due:35,cur:'USD',budget:'1,850,000',type:'Restricted Tender',dur:'6 Months delivery + installation',
+  sum:'Supply, delivery and commissioning of water purification units, hand-washing stations and sanitation kits for schools and health facilities, with spare parts and user training.',docs:['tech','fin','reg','tax','coc','cert']},
+ {id:'rfp0001119',no:'RFP0001119',title:'Procurement of ICT Equipment for Digital Learning Centers',ref:'PRC0001015',loc:'USA',pub:-6,due:60,cur:'USD',budget:'940,000',type:'Open Tender',dur:'4 Months delivery + 3 Years warranty',
+  sum:'Laptops, tablets, networking gear and charging carts for digital learning centers, including configuration, asset tagging and a three-year onsite warranty.',docs:['tech','fin','reg','tax','coc','ref']},
+ {id:'rfp0001122',no:'RFP0001122',title:'Supply and Delivery of Medical Equipment for Primary Health Centres',ref:'PRC0001021',loc:'South Africa',pub:-11,due:21,cur:'USD',budget:'3,200,000',type:'Open Tender',dur:'8 Months delivery + 12 Months service',
+  sum:'Supply and delivery of diagnostic and maternal-health equipment for primary health centres, including installation, calibration and biomedical technician training.',docs:['tech','fin','reg','tax','coc','cert']}
+];
+OPPS.forEach(function(o){o.deadline=plusDays(o.due);o.published=plusDays(o.pub);o.crit=CRIT});
+var byId=function(id){return OPPS.filter(function(o){return o.id===id})[0]};
+var VENDOR={name:'Acme Digital Solutions Pvt Ltd',id:'V-100482',contact:'Priya Nair',email:'priya.nair@acme-digital.example',country:'India'};
+
+var KEY='vendor-portal-proto-v1';
+var S,UI={confirm:false,errors:null,sortBy:'deadline',sortDir:1,f:{num:'',kw:'',ref:'',loc:'',st:''},demoOpen:false,savedAt:null};
+
+function seed(){
+  var s={v:1,resp:{},notes:[],contracts:[]};
+  s.resp.rfp0001121={status:'Under Review',price:'2450000',currency:'USD',validity:'90',period:'16 weeks',note:'Fully equipped units on a certified chassis, with 24 months onsite service and operator training included.',
+    docs:{tech:{name:'Technical-Proposal-MLSU.pdf',size:2400000,at:daysAgo(6)},fin:{name:'Financial-Proposal-MLSU.xlsx',size:310000,at:daysAgo(6)},reg:{name:'Company-Registration-Certificate.pdf',size:480000,at:daysAgo(6)},tax:{name:'Tax-Compliance-Certificate.pdf',size:520000,at:daysAgo(6)},coc:{name:'Code-of-Conduct-signed.pdf',size:210000,at:daysAgo(6)}},
+    submittedAt:daysAgo(6),comments:[],history:[{at:daysAgo(7),text:'Application started (draft created)'},{at:daysAgo(6),text:'Response submitted'},{at:daysAgo(4),text:'Status changed to Under Review'}]};
+  s.resp.rfp0001123={status:'Need Clarification',price:'1790000',currency:'USD',validity:'120',period:'5 months',note:'Modular purification units with local installation partner in Kabul.',
+    docs:{tech:{name:'WASH-Technical-Proposal.pdf',size:3100000,at:daysAgo(9)},fin:{name:'WASH-Price-Schedule.pdf',size:260000,at:daysAgo(9)},reg:{name:'Company-Registration-Certificate.pdf',size:480000,at:daysAgo(9)},tax:{name:'Tax-Compliance-Certificate.pdf',size:520000,at:daysAgo(9)},coc:{name:'Code-of-Conduct-signed.pdf',size:210000,at:daysAgo(9)}},
+    submittedAt:daysAgo(9),comments:[{by:'hm',text:'Please upload your NSF/WHO certification for the filtration units and confirm the installation timeline for remote districts.',at:daysAgo(1)}],
+    history:[{at:daysAgo(10),text:'Application started (draft created)'},{at:daysAgo(9),text:'Response submitted'},{at:daysAgo(5),text:'Status changed to Under Review'},{at:daysAgo(1),text:'Hiring Manager requested clarification'}]};
+  s.notes.push({id:1,at:daysAgo(1),text:'Clarification requested on RFP0001123',opp:'rfp0001123',read:false});
+  return s;
+}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var p=JSON.parse(r);if(p&&p.v===1)return p}}catch(e){}return seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+S=load();
+
+/* ---------- state helpers ---------- */
+function isClosed(o){return o.deadline<plusDays(0)}
+function statusOf(o){var r=S.resp[o.id];if(r)return r.status;return isClosed(o)?'Closed':'Available'}
+function pcls(st){return 'p-'+st.replace(/ .*$/,'').replace('Not','NotAwarded').replace('NotAwardedAwarded','NotAwarded')}
+function pill(st){var c={'Available':'p-Available','Draft':'p-Draft','Applied':'p-Applied','Under Review':'p-Under','Need Clarification':'p-Need','Awarded':'p-Awarded','Not Awarded':'p-NotAwarded','Closed':'p-Closed'}[st]||'p-Draft';return '<span class="pill '+c+'">'+esc(st)+'</span>'}
+function hist(r,t){r.history.push({at:nowISO(),text:t})}
+function note(id,t){S.notes.unshift({id:Date.now()+Math.random(),at:nowISO(),text:t,opp:id,read:false})}
+function editable(r){return r&&(r.status==='Draft'||r.status==='Need Clarification')}
+function unread(){return S.notes.filter(function(n){return !n.read}).length}
+function daysLeft(o){var d=Math.round((o.deadline-plusDays(0))/864e5);return d<0?'Closed':d===0?'Due today':d+' day'+(d>1?'s':'')+' left'}
+var toastT;function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('on')},2400)}
+
+/* ---------- views ---------- */
+function crumbs(a){return '<nav class="crumbs" aria-label="Breadcrumb">'+a.map(function(x,i){return x[1]?'<a href="'+x[1]+'">'+esc(x[0])+'</a>':'<span>'+esc(x[0])+'</span>'}).join(' <span aria-hidden="true">/</span> ')+'</nav>'}
+
+function viewHome(){
+  var apps=Object.keys(S.resp).map(function(k){return S.resp[k]});
+  var cnt=function(st){return apps.filter(function(r){return r.status===st}).length};
+  var open=OPPS.filter(function(o){return !S.resp[o.id]&&!isClosed(o)}).length;
+  var tiles=[
+   ['Opportunities','Browse published tenders and apply with your proposal','#opportunities','megaphone','#1cabe2','New'],
+   ['My Applications','Track every response and its review status','#applications','list','#0b2a5b'],
+   ['My Contracts','View and manage your contracts easily','#contracts','file','#00833d'],
+   ['My Invoices','Easily keep track of all of your invoices','#invoices','receipt','#e87a1e'],
+   ['My Notifications','Stay updated with all of your activities','#notifications','bell','#374ea2'],
+   ['My Data updates','Stay updated with your data update requests','#updates','refresh','#6a1b9a'],
+   ['My Profile','Manage your profile, supporting documents and more','#profile','user','#e2231a']
+  ];
+  return '<div class="hello"><div><h1>Welcome, '+esc(VENDOR.name)+'</h1><p class="muted" style="margin:4px 0 0">Vendor ID '+VENDOR.id+'</p></div>'
+   +'<div class="strip"><a class="chip" href="#opportunities"><b>'+open+'</b> open to apply</a><a class="chip" href="#applications"><b>'+(cnt('Under Review')+cnt('Applied'))+'</b> in review</a><a class="chip" href="#applications"><b>'+cnt('Need Clarification')+'</b> need clarification</a></div></div>'
+   +'<div class="tiles">'+tiles.map(function(t){
+     var b=t[2]==='#notifications'&&unread()?'<span class="badge">'+unread()+'</span>':'';
+     return '<a class="tile" href="'+t[2]+'"><div class="art" style="background:'+t[4]+'">'+(t[5]?'<span class="tag-new">'+t[5]+'</span>':'')+b+ic(t[3],72)+'</div><h2>'+t[0]+'</h2><p>'+t[1]+'</p></a>'}).join('')+'</div>';
+}
+
+function filtered(){
+  var f=UI.f;
+  var r=OPPS.filter(function(o){
+    if(f.num&&o.no.toLowerCase().indexOf(f.num.toLowerCase().replace(/\*/g,''))<0)return false;
+    if(f.kw&&(o.title+' '+o.sum).toLowerCase().indexOf(f.kw.toLowerCase())<0)return false;
+    if(f.ref&&o.ref.toLowerCase().indexOf(f.ref.toLowerCase())<0)return false;
+    if(f.loc&&o.loc!==f.loc)return false;
+    if(f.st&&statusOf(o)!==f.st)return false;
+    return true});
+  var k=UI.sortBy,d=UI.sortDir;
+  r.sort(function(a,b){var x=k==='title'?a.title:k==='loc'?a.loc:+a.deadline,y=k==='title'?b.title:k==='loc'?b.loc:+b.deadline;return (x<y?-1:x>y?1:0)*d});
+  return r;
+}
+function oppRows(){
+  var r=filtered();
+  if(!r.length)return '<div class="empty"><b>No opportunities match</b>Clear a filter to see more published tenders.</div>';
+  return r.map(function(o){return '<a class="lr" href="#opp-'+o.id+'-tender"><div><div class="ref">Reference : '+esc(o.ref)+'</div><div class="t">'+esc(o.title)+'</div><div class="n">'+o.no+'</div></div><div>'+esc(o.loc)+'</div><div>'+isoDay(o.deadline)+'<div class="n">'+daysLeft(o)+'</div></div><div>'+pill(statusOf(o))+'</div></a>'}).join('');
+}
+function viewOpps(){
+  var locs=OPPS.map(function(o){return o.loc}).filter(function(v,i,a){return a.indexOf(v)===i});
+  var sts=['Available','Draft','Applied','Under Review','Need Clarification','Awarded','Not Awarded','Closed'];
+  var f=UI.f;
+  return crumbs([['Home','#home'],['Opportunities']])
+  +'<div class="page-h"><h1>Published opportunities</h1></div>'
+  +'<div class="hero" role="search">'
+  +'<div><label for="f-num">Number</label><div class="in"><input id="f-num" data-f="num" placeholder="RFP*******" value="'+esc(f.num)+'">'+ic('search',18)+'</div></div>'
+  +'<div><label for="f-kw">Keywords</label><div class="in"><input id="f-kw" data-f="kw" placeholder="Keywords" value="'+esc(f.kw)+'">'+ic('search',18)+'</div></div>'
+  +'<div><label for="f-ref">Reference</label><div class="in"><input id="f-ref" data-f="ref" placeholder="Reference" value="'+esc(f.ref)+'">'+ic('search',18)+'</div></div>'
+  +'<div><label for="f-loc">Location</label><select id="f-loc" data-f="loc"><option value="">All Location</option>'+locs.map(function(l){return '<option'+(f.loc===l?' selected':'')+'>'+esc(l)+'</option>'}).join('')+'</select></div>'
+  +'<div><label for="f-st">My status</label><select id="f-st" data-f="st"><option value="">All statuses</option>'+sts.map(function(l){return '<option'+(f.st===l?' selected':'')+'>'+l+'</option>'}).join('')+'</select></div></div>'
+  +'<div class="list"><div class="lh"><button data-act="sort" data-k="title">'+ic('doc',16)+' Tender Position '+ic('sort',16)+'</button><button data-act="sort" data-k="loc">'+ic('pin',16)+' Location '+ic('sort',16)+'</button><button data-act="sort" data-k="deadline">'+ic('cal',16)+' Deadline for Submission '+ic('sort',16)+'</button><div>My status</div></div><div id="rows">'+oppRows()+'</div></div>';
+}
+
+var STEPS=['Draft saved','Submitted','Under review','Decision'];
+function stepIndex(st){return {'Draft':0,'Applied':1,'Under Review':2,'Need Clarification':2,'Awarded':3,'Not Awarded':3}[st]}
+function tracker(r){
+  var i=stepIndex(r.status),flag=r.status==='Need Clarification',bad=r.status==='Not Awarded';
+  return '<ol class="track" aria-label="Response progress">'+STEPS.map(function(s,k){
+    var c=k<i?'done':k===i?'now':'',lab=s,dot=k<i?'✓':k+1;
+    if(k===i&&flag){c='now flag';lab='Clarification needed';dot='!'}
+    if(k===i&&r.status==='Awarded'){c='done';dot='✓';lab='Awarded'}
+    if(k===i&&bad){c='now bad';lab='Not selected';dot='×'}
+    if(k===i&&r.status==='Applied'){c='done';dot='✓'}
+    if(r.status==='Applied'&&k===2){c='now';lab='Awaiting review'}
+    return '<li class="'+c+'"><span class="dot">'+dot+'</span><span>'+lab+'</span></li>'}).join('')+'</ol>';
+}
+
+function rail(o,r){
+  var st=statusOf(o),btn;
+  if(!r){btn=isClosed(o)?'<button class="btn block" disabled>Closed</button>':'<button class="btn block" data-act="apply" data-id="'+o.id+'">Apply to opportunity</button>'}
+  else if(r.status==='Draft')btn='<a class="btn block" href="#opp-'+o.id+'-response">Continue response</a>';
+  else if(r.status==='Need Clarification')btn='<a class="btn block" href="#opp-'+o.id+'-response">Update response</a>';
+  else btn='<button class="btn block" disabled>'+(r.status==='Applied'||r.status==='Under Review'?'Applied':r.status)+'</button>';
+  var hint=!r?'':r.status==='Need Clarification'?'Apply is enabled again because the Hiring Manager asked for clarification.':editable(r)?'':'Editing is locked. Use Clarifications to message the Hiring Manager.';
+  return '<aside class="rail"><h2>Opportunity Overview</h2><dl><dt>Response Status</dt><dd>'+pill(st)+'</dd><dt>'+ic('cal',16)+' Deadline</dt><dd>'+isoDay(o.deadline)+'<br><small class="muted">'+daysLeft(o)+'</small></dd><dt>'+ic('hour',16)+' Published</dt><dd>'+isoDay(o.published)+'</dd><dt>'+ic('pin',16)+' Beneficiary Country/Territory</dt><dd>'+esc(o.loc)+'</dd><dt>'+ic('doc',16)+' Reference</dt><dd>'+esc(o.ref)+'</dd><dt>'+ic('file',16)+' Number</dt><dd>'+o.no+'</dd></dl><hr>'+btn+(hint?'<p class="hint">'+hint+'</p>':'')+'</aside>';
+}
+
+function tabTender(o){
+  return '<div class="sect"><h2>Summary</h2><p>'+esc(o.sum)+'</p></div>'
+  +'<div class="kv"><div><small>Estimated Budget</small><b>'+o.cur+' '+o.budget+'</b></div><div><small>Tender Type</small><b>'+o.type+'</b></div><div style="grid-column:1/-1"><small>Duration</small><b>'+esc(o.dur)+'</b></div></div>'
+  +'<div class="sect" style="margin-top:26px"><h2>Required documents</h2><div class="scroll"><table class="tbl"><thead><tr><th>Document</th><th>Requirement</th><th>Notes</th></tr></thead><tbody>'
+  +o.docs.map(function(d){var x=DOCS[d];return '<tr><td><b>'+x.l+'</b></td><td><span class="tag'+(x.m?' req':'')+'">'+(x.m?'Mandatory':'Optional')+'</span></td><td>'+x.h+'</td></tr>'}).join('')+'</tbody></table></div></div>'
+  +'<div class="sect"><h2>Evaluation criteria</h2><div class="scroll"><table class="tbl"><thead><tr><th>Criterion</th><th>Weight</th><th></th></tr></thead><tbody>'
+  +o.crit.map(function(c){return '<tr><td>'+c[0]+'</td><td>'+c[1]+'%</td><td><div class="bar"><i style="width:'+c[1]*2+'%"></i></div></td></tr>'}).join('')+'</tbody></table></div><p class="muted" style="margin-top:10px;font-size:12px">Award is decided manually by the Hiring Manager using these parameters.</p></div>';
+}
+
+function noteFor(o,r){
+  var m={'Draft':['info','Draft. This response has not been submitted. Last saved '+(UI.savedAt?fmtDT(UI.savedAt):'just now')+'.'],
+   'Applied':['info','Submitted on '+(r.submittedAt?fmtDT(r.submittedAt):'')+'. Editing is locked until the Hiring Manager requests clarification.'],
+   'Under Review':['neutral','Your response is being reviewed by the Hiring Manager. Editing is locked. Use Clarifications to ask a question.'],
+   'Need Clarification':['warn','The Hiring Manager needs clarification. Read the Clarifications tab, update your response or documents, then resubmit.'],
+   'Awarded':['ok','Congratulations. This opportunity was awarded to you. Find the contract under My Contracts.'],
+   'Not Awarded':['bad','Thank you for applying. Your proposal was not selected for this opportunity.']}[r.status];
+  return '<div class="note '+m[0]+'" role="status"><span>'+m[1]+'</span></div>';
+}
+
+function tabResponse(o){
+  var r=S.resp[o.id];
+  if(!r){return '<div class="card"><h2>You have not applied yet</h2><p class="muted">Applying creates a draft response. You can save it, upload documents and come back later before submitting.</p>'+(isClosed(o)?'<button class="btn" disabled>Closed</button>':'<button class="btn" data-act="apply" data-id="'+o.id+'">Apply to opportunity</button>')+'</div>'}
+  var ed=editable(r),E=UI.errors||{fields:[],docs:[]},dis=ed?'':' disabled';
+  var fe=function(k){return E.fields.indexOf(k)>=0};
+  var req=o.docs.filter(function(d){return DOCS[d].m}),have=req.filter(function(d){return r.docs[d]}).length;
+  var h=tracker(r)+noteFor(o,r);
+  h+='<div class="howto"><h2>How to Attach &amp; Submit Documents</h2><ol><li>Review the required documents listed on the Tender tab.</li><li>Fill in your proposal details below.</li><li>Upload each document with its Upload button, or drag a file onto its row (max 10 MB).</li><li>Save the draft at any time and return later.</li><li>When all mandatory documents are attached, submit the response.</li><li>You can replace any document before submitting.</li></ol></div>';
+  h+='<div class="card"><h2>Proposal details</h2><div class="form">'
+   +'<div class="field'+(fe('price')?' err':'')+'"><label for="r-price">Total offered price *</label><input id="r-price" data-r="price" type="number" min="0" inputmode="decimal" value="'+esc(r.price)+'"'+dis+'>'+(fe('price')?'<span class="emsg">Enter a price greater than 0.</span>':'')+'</div>'
+   +'<div class="field"><label for="r-cur">Currency</label><select id="r-cur" data-r="currency"'+dis+'>'+['USD','EUR','INR','GBP'].map(function(c){return '<option'+(r.currency===c?' selected':'')+'>'+c+'</option>'}).join('')+'</select></div>'
+   +'<div class="field'+(fe('validity')?' err':'')+'"><label for="r-val">Offer validity (days) *</label><input id="r-val" data-r="validity" type="number" min="1" value="'+esc(r.validity)+'"'+dis+'>'+(fe('validity')?'<span class="emsg">Enter how many days the offer is valid.</span>':'')+'</div>'
+   +'<div class="field"><label for="r-per">Delivery / implementation period</label><input id="r-per" data-r="period" value="'+esc(r.period)+'" placeholder="e.g. 12 weeks"'+dis+'></div>'
+   +'<div class="field full'+(fe('note')?' err':'')+'"><label for="r-note">Cover note *</label><textarea id="r-note" data-r="note" placeholder="Summarise your offer and why you are a good fit."'+dis+'>'+esc(r.note)+'</textarea>'+(fe('note')?'<span class="emsg">Add a short cover note.</span>':'')+'</div></div></div>';
+  h+='<div class="card"><h2>Document Upload</h2><div class="meter"><span><b>'+have+'</b> of '+req.length+' mandatory documents attached</span><div class="bar"><i style="width:'+(req.length?have/req.length*100:0)+'%"></i></div></div>'
+   +o.docs.map(function(d){var x=DOCS[d],f=r.docs[d],er=E.docs.indexOf(d)>=0;
+     return '<div class="docrow'+(er?' err':'')+'" data-drop="'+d+'"><div><b>'+x.l+'</b> <span class="tag'+(x.m?' req':'')+'">'+(x.m?'Mandatory':'Optional')+'</span><small>'+x.h+'</small>'+(er?'<span class="emsg">Attach this document to submit.</span>':'')+'</div>'
+     +'<div class="file">'+(f?ic('doc',18)+'<span><b>'+esc(f.name)+'</b><br><small>'+size(f.size)+' · uploaded '+fmtDT(f.at)+'</small></span>':'<span class="muted">No file attached</span>')+'</div>'
+     +'<div class="act">'+(ed?'<input class="vh" type="file" id="u-'+d+'" data-doc="'+d+'" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg"><label class="btn sec sm" for="u-'+d+'">'+ic('up',14)+(f?' Replace':' Upload')+'</label>'
+       +(!f&&x.profile?'<button class="btn ghost sm" data-act="fromprofile" data-d="'+d+'" data-id="'+o.id+'">Use from profile</button>':'')
+       +(f?'<button class="btn ghost sm" data-act="rmdoc" data-d="'+d+'" data-id="'+o.id+'">Remove</button>':''):'')+'</div></div>'}).join('');
+  if(ed){
+    h+='<div class="actions"><button class="btn sec" data-act="save" data-id="'+o.id+'">Save draft</button><button class="btn" data-act="ask" data-id="'+o.id+'">'+(r.status==='Need Clarification'?'Resubmit response':'Submit response')+'</button><span class="muted" id="savedAt">'+(UI.savedAt?'Saved '+fmtDT(UI.savedAt):'Changes are saved as you type')+'</span></div>';
+    if(UI.confirm)h+='<div class="confirm" role="alertdialog" aria-label="Confirm submission"><p><b>Submit this response now?</b> Editing will be locked until the Hiring Manager requests clarification.</p><button class="btn" data-act="submit" data-id="'+o.id+'">Yes, submit</button><button class="btn sec" data-act="cancel">Keep editing</button></div>';
+  }
+  return h+'</div>';
+}
+
+function tabClar(o){
+  var r=S.resp[o.id],cm=r?r.comments:(S.pre&&S.pre[o.id]||[]);
+  var th=cm.length?'<div class="thread">'+cm.map(function(c){var me=c.by==='me';return '<div class="msg'+(me?' me':'')+'"><div class="who">'+(me?'You':'Hiring Manager')+'</div><p>'+esc(c.text)+'</p><div class="when">'+fmtDT(c.at)+'</div></div>'}).join('')+'</div>':'<div class="empty" style="padding:18px 0;text-align:left"><b>No messages yet</b>Ask the Hiring Manager a question about this opportunity. Comments stay open for the whole process.</div>';
+  var hn=r&&r.status==='Need Clarification'?'<div class="note warn">The Hiring Manager is waiting for your reply. Respond here, then update and resubmit your response.</div>':'';
+  return hn+th+'<div class="field"><label for="cmt">Add a comment</label><textarea id="cmt" placeholder="Type your question or reply"></textarea></div><div class="actions"><button class="btn" data-act="comment" data-id="'+o.id+'">Send comment</button></div>';
+}
+function tabHist(o){
+  var r=S.resp[o.id];
+  if(!r)return '<div class="empty" style="text-align:left;padding-left:0"><b>No activity yet</b>Your actions on this opportunity will be listed here.</div>';
+  return '<ol class="hist">'+r.history.slice().reverse().map(function(x){return '<li><time>'+fmtDT(x.at)+'</time>'+esc(x.text)+'</li>'}).join('')+'</ol>';
+}
+function viewOpp(id,tab){
+  var o=byId(id);if(!o)return '<div class="empty"><b>Opportunity not found</b><a href="#opportunities">Back to opportunities</a></div>';
+  var r=S.resp[id],tabs=[['tender','Tender'],['response','Response'],['clarifications','Clarifications'],['history','History']];
+  if(tabs.map(function(t){return t[0]}).indexOf(tab)<0)tab='tender';
+  var cn=r&&r.status==='Need Clarification'?'<span class="cnt">1</span>':'';
+  var body={tender:tabTender,response:tabResponse,clarifications:tabClar,history:tabHist}[tab](o);
+  return crumbs([['Home','#home'],['Opportunities','#opportunities'],[o.no]])
+   +'<div class="detail"><div style="min-width:0"><h1>'+esc(o.title)+'</h1><div class="tabs" role="tablist">'+tabs.map(function(t){return '<a href="#opp-'+id+'-'+t[0]+'"'+(t[0]===tab?' aria-current="page"':'')+'>'+t[1]+(t[0]==='clarifications'?cn:'')+'</a>'}).join('')+'</div>'+body+'</div>'+rail(o,r)+'</div>';
+}
+
+function viewApps(){
+  var rows=OPPS.filter(function(o){return S.resp[o.id]});
+  var c=function(st){return rows.filter(function(o){return S.resp[o.id].status===st}).length};
+  var sum=[['Draft','Drafts'],['Applied','Submitted'],['Under Review','Under review'],['Need Clarification','Need clarification'],['Awarded','Awarded'],['Not Awarded','Not awarded']];
+  return crumbs([['Home','#home'],['My Applications']])+'<div class="page-h"><h1>My Applications</h1><a class="btn sec" href="#opportunities">Browse opportunities</a></div>'
+   +'<div class="sum">'+sum.map(function(s){return '<div><b>'+c(s[0])+'</b><span>'+s[1]+'</span></div>'}).join('')+'</div>'
+   +(rows.length?'<div class="scroll"><table class="tbl"><thead><tr><th>Opportunity</th><th>Submitted</th><th>Deadline</th><th>Offer</th><th>Status</th><th></th></tr></thead><tbody>'
+   +rows.map(function(o){var r=S.resp[o.id];return '<tr><td><b>'+esc(o.title)+'</b><br><span class="muted">'+o.no+'</span></td><td>'+(r.submittedAt?fmtD(r.submittedAt):'Not submitted')+'</td><td>'+isoDay(o.deadline)+'</td><td>'+(r.price?r.currency+' '+money(r.price):'–')+'</td><td>'+pill(r.status)+'</td><td><a class="btn sec sm" href="#opp-'+o.id+'-'+(r.status==='Need Clarification'||r.status==='Draft'?'response':'tender')+'">'+(r.status==='Need Clarification'?'Respond':'Open')+'</a></td></tr>'}).join('')+'</tbody></table></div>'
+   :'<div class="list"><div class="empty"><b>No applications yet</b>Open an opportunity and choose Apply to start your first response.</div></div>');
+}
+function viewContracts(){
+  return crumbs([['Home','#home'],['My Contracts']])+'<div class="page-h"><h1>My Contracts</h1></div>'
+  +(S.contracts.length?'<div class="scroll"><table class="tbl"><thead><tr><th>Contract</th><th>Opportunity</th><th>Value</th><th>Start date</th><th>Status</th></tr></thead><tbody>'
+   +S.contracts.map(function(c){var o=byId(c.opp);return '<tr><td><b>'+c.no+'</b></td><td>'+esc(o.title)+'<br><span class="muted">'+o.no+'</span></td><td>'+c.cur+' '+money(c.value)+'</td><td>'+fmtD(c.start)+'</td><td><span class="pill p-Awarded">Active</span></td></tr>'}).join('')+'</tbody></table></div>'
+   :'<div class="list"><div class="empty"><b>No contracts yet</b>When a Hiring Manager awards you an opportunity, the contract appears here.</div></div>');
+}
+function viewNotes(){
+  return crumbs([['Home','#home'],['My Notifications']])+'<div class="page-h"><h1>My Notifications</h1><button class="btn sec sm" data-act="readall">Mark all read</button></div>'
+  +'<div class="list">'+(S.notes.length?S.notes.map(function(n){return '<a class="lr" style="grid-template-columns:minmax(0,1fr) auto" href="#opp-'+n.opp+'-'+(/larif/.test(n.text)?'clarifications':'response')+'"><div><div class="t">'+(n.read?'':'<span class="pill p-Need" style="margin-right:8px">New</span>')+esc(n.text)+'</div><div class="n">'+fmtDT(n.at)+'</div></div><div>'+ic('doc',18)+'</div></a>'}).join(''):'<div class="empty"><b>You are all caught up</b>Status changes and Hiring Manager comments show up here.</div>')+'</div>';
+}
+function viewProfile(){
+  return crumbs([['Home','#home'],['My Profile']])+'<div class="page-h"><h1>My Profile</h1></div><div class="card"><div class="kv"><div><small>Company</small><b>'+esc(VENDOR.name)+'</b></div><div><small>Vendor ID</small><b>'+VENDOR.id+'</b></div><div><small>Primary contact</small><b>'+VENDOR.contact+'</b></div><div><small>Email</small><b>'+VENDOR.email+'</b></div><div><small>Country</small><b>'+VENDOR.country+'</b></div></div></div>'
+   +'<div class="card"><h2>Supporting documents</h2><p class="muted">These can be reused in applications with “Use from profile”.</p><ul style="margin:0;padding-left:18px"><li>Company-Registration-Certificate.pdf</li><li>Tax-Compliance-Certificate.pdf</li></ul></div>';
+}
+function viewStub(t,msg){return crumbs([['Home','#home'],[t]])+'<div class="page-h"><h1>'+t+'</h1></div><div class="list"><div class="empty"><b>Not part of this prototype</b>'+msg+'</div></div>'}
+
+/* ---------- router ---------- */
+function route(){
+  var h=(location.hash||'#home').slice(1),p=h.split('-'),out;
+  document.querySelectorAll('[data-nav]').forEach(function(a){a.removeAttribute('aria-current')});
+  var nav=p[0]==='opp'?'opportunities':h;var a=$('[data-nav="'+nav+'"]');if(a)a.setAttribute('aria-current','page');
+  if(h==='home')out=viewHome();
+  else if(h==='opportunities')out=viewOpps();
+  else if(p[0]==='opp')out=viewOpp(p[1],p[2]||'tender');
+  else if(h==='applications')out=viewApps();
+  else if(h==='contracts')out=viewContracts();
+  else if(h==='notifications')out=viewNotes();
+  else if(h==='profile')out=viewProfile();
+  else if(h==='invoices')out=viewStub('My Invoices','Invoicing opens once a contract is active.');
+  else if(h==='updates')out=viewStub('My Data updates','Data update requests are not modelled in this prototype.');
+  else out=viewHome();
+  $('#view').innerHTML=out;
+  chrome();
+}
+function chrome(){var u=unread(),b=$('#bellBadge');b.hidden=!u;b.textContent=u;renderDemo()}
+var lastHash=null;
+window.addEventListener('hashchange',function(){UI.confirm=false;UI.errors=null;UI.savedAt=null;route();window.scrollTo(0,0)});
+
+/* ---------- actions ---------- */
+function mustResp(id){return S.resp[id]}
+function submitCheck(o,r){
+  var e={fields:[],docs:[]};
+  if(!(+r.price>0))e.fields.push('price');
+  if(!(+r.validity>0))e.fields.push('validity');
+  if(!String(r.note||'').trim())e.fields.push('note');
+  o.docs.forEach(function(d){if(DOCS[d].m&&!r.docs[d])e.docs.push(d)});
+  return e;
+}
+function putFile(id,d,file){
+  var r=S.resp[id];
+  if(file.size>10*1048576){toast('File is larger than 10 MB');return}
+  if(!/\.(pdf|docx?|xlsx?|zip|png|jpe?g)$/i.test(file.name)){toast('Unsupported file type');return}
+  var had=!!r.docs[d];
+  r.docs[d]={name:file.name,size:file.size,at:nowISO()};
+  hist(r,(had?'Replaced ':'Uploaded ')+DOCS[d].l+' ('+file.name+')');
+  save();route();toast(DOCS[d].l+(had?' replaced':' uploaded'));
+}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');
+  if(!t){if(e.target.id==='demoBtn'||e.target.closest('#demoBtn')){UI.demoOpen=!UI.demoOpen;renderDemo()}return}
+  var act=t.dataset.act,id=t.dataset.id,o=id&&byId(id),r=id&&S.resp[id];
+  if(act==='sort'){var k=t.dataset.k;UI.sortDir=UI.sortBy===k?-UI.sortDir:1;UI.sortBy=k;route();return}
+  if(act==='apply'){
+    if(S.resp[id])return;
+    S.resp[id]={status:'Draft',price:'',currency:o.cur==='INR'?'INR':'USD',validity:'90',period:'',note:'',docs:{},submittedAt:null,comments:[],history:[]};
+    hist(S.resp[id],'Application started (draft created)');save();toast('Draft created. Add your proposal and documents.');
+    location.hash='opp-'+id+'-response';if(location.hash.slice(1)==='opp-'+id+'-response')route();return}
+  if(act==='save'){hist(r,'Draft saved');UI.savedAt=nowISO();save();route();toast('Draft saved');return}
+  if(act==='ask'){var er=submitCheck(o,r);UI.errors=er;UI.confirm=!(er.fields.length||er.docs.length);route();
+    if(!UI.confirm){toast('Complete the highlighted items to submit');var el=$('.err');if(el)el.scrollIntoView({block:'center'})}return}
+  if(act==='cancel'){UI.confirm=false;route();return}
+  if(act==='submit'){var re=r.status==='Need Clarification';r.status='Applied';r.submittedAt=nowISO();hist(r,re?'Response resubmitted after clarification':'Response submitted');
+    note(id,(re?'Response resubmitted for ':'Response submitted for ')+o.no);UI.confirm=false;UI.errors=null;save();route();toast(re?'Response resubmitted':'Response submitted');return}
+  if(act==='rmdoc'){var d=t.dataset.d;hist(r,'Removed '+DOCS[d].l);delete r.docs[d];save();route();return}
+  if(act==='fromprofile'){var d2=t.dataset.d;r.docs[d2]={name:DOCS[d2].profile,size:500000,at:nowISO()};hist(r,'Attached '+DOCS[d2].l+' from profile');save();route();toast('Attached from profile');return}
+  if(act==='comment'){var ta=$('#cmt'),v=ta.value.trim();if(!v){toast('Write a comment first');return}
+    if(!S.resp[id]){S.pre=S.pre||{};(S.pre[id]=S.pre[id]||[]).push({by:'me',text:v,at:nowISO()})}
+    else{r.comments.push({by:'me',text:v,at:nowISO()});hist(r,'Vendor commented')}
+    save();route();toast('Comment sent');return}
+  if(act==='readall'){S.notes.forEach(function(n){n.read=true});save();route();return}
+  /* hiring manager simulation */
+  if(act==='hm'){hmAct(t.dataset.do);return}
+  if(act==='reset'){try{localStorage.removeItem(KEY)}catch(x){}S=seed();save();UI.errors=null;UI.confirm=false;location.hash='home';route();toast('Demo data reset')}
+});
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.dataset.f!==undefined){UI.f[t.dataset.f]=t.value;var rows=$('#rows');if(rows)rows.innerHTML=oppRows();return}
+  if(t.dataset.r){var id=location.hash.slice(1).split('-')[1],r=S.resp[id];if(r&&editable(r)){r[t.dataset.r]=t.value;save();UI.savedAt=nowISO();var s=$('#savedAt');if(s)s.textContent='Saved '+fmtDT(UI.savedAt)}}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.dataset.f!==undefined){UI.f[t.dataset.f]=t.value;var rows=$('#rows');if(rows)rows.innerHTML=oppRows();return}
+  if(t.dataset.doc&&t.files&&t.files[0]){putFile(location.hash.slice(1).split('-')[1],t.dataset.doc,t.files[0])}
+});
+['dragover','dragleave','drop'].forEach(function(ev){document.addEventListener(ev,function(e){
+  var row=e.target.closest&&e.target.closest('[data-drop]');if(!row)return;
+  e.preventDefault();
+  if(ev==='dragover')row.classList.add('drag');else row.classList.remove('drag');
+  if(ev==='drop'&&e.dataTransfer.files[0]){var id=location.hash.slice(1).split('-')[1];if(editable(S.resp[id]))putFile(id,row.dataset.drop,e.dataTransfer.files[0])}
+})});
+
+/* ---------- hiring manager simulation drawer ---------- */
+function hmAct(what){
+  var sel=$('#demoOpp'),id=sel&&sel.value;if(!id)return;var o=byId(id),r=S.resp[id];if(!r)return;
+  var msg=($('#demoMsg')||{}).value||'';
+  if(what==='review'){r.status='Under Review';hist(r,'Status changed to Under Review');note(id,o.no+' is now under review');toast('Marked Under Review')}
+  if(what==='clarify'){r.status='Need Clarification';var m=msg.trim()||'Please clarify your delivery timeline and warranty terms.';r.comments.push({by:'hm',text:m,at:nowISO()});hist(r,'Hiring Manager requested clarification');note(id,'Clarification requested on '+o.no);toast('Clarification requested')}
+  if(what==='comment'){var m2=msg.trim();if(!m2){toast('Type a message first');return}r.comments.push({by:'hm',text:m2,at:nowISO()});hist(r,'Hiring Manager commented');note(id,'New comment from Hiring Manager on '+o.no+' (clarifications)');toast('Comment posted')}
+  if(what==='award'){r.status='Awarded';var no='CON-'+(2026000+S.contracts.length+101);S.contracts.push({no:no,opp:id,value:+r.price||0,cur:r.currency,start:nowISO()});hist(r,'Awarded. Contract '+no+' created');note(id,'Congratulations. '+o.no+' was awarded to you, contract '+no);toast('Awarded, contract created')}
+  if(what==='reject'){r.status='Not Awarded';hist(r,'Status changed to Not Awarded');note(id,o.no+' was not awarded to your proposal');toast('Marked Not Awarded')}
+  save();route();
+}
+function renderDemo(){
+  var b=$('#demoBtn'),d=$('#demo');b.setAttribute('aria-expanded',UI.demoOpen);d.hidden=!UI.demoOpen;if(!UI.demoOpen)return;
+  var cur=location.hash.slice(1).split('-')[1],prev=$('#demoOpen')?$('#demoOpen').value:null;
+  var list=OPPS.filter(function(o){var r=S.resp[o.id];return r&&r.status!=='Draft'});
+  var keepSel=($('#demoOpp')||{}).value,keepMsg=($('#demoMsg')||{}).value||'';
+  var chosen=keepSel&&list.some(function(o){return o.id===keepSel})?keepSel:(list.some(function(o){return o.id===cur})?cur:(list[0]&&list[0].id));
+  d.innerHTML='<h3>Hiring Manager simulator</h3><p>Prototype only. Act as the Hiring Manager to move a submitted response through review and award, then watch the vendor view update.</p>'
+  +(list.length?'<label class="vh" for="demoOpp">Opportunity</label><select id="demoOpp">'+list.map(function(o){return '<option value="'+o.id+'"'+(o.id===chosen?' selected':'')+'>'+o.no+' · '+S.resp[o.id].status+'</option>'}).join('')+'</select>'
+   +'<label class="vh" for="demoMsg">Message</label><textarea id="demoMsg" rows="3" placeholder="Message to vendor (used for clarification or comment)">'+esc(keepMsg)+'</textarea>'
+   +'<div class="row"><button class="btn sm sec" data-act="hm" data-do="review">Under review</button><button class="btn sm sec" data-act="hm" data-do="clarify">Request clarification</button><button class="btn sm sec" data-act="hm" data-do="comment">Post comment</button><button class="btn sm" data-act="hm" data-do="award">Award</button><button class="btn sm sec" data-act="hm" data-do="reject">Not awarded</button></div>'
+   :'<p><b>No submitted responses yet.</b> Apply to an opportunity and submit it first.</p>')
+  +'<button class="btn ghost sm" data-act="reset">Reset demo data</button>';
+}
+
+route();
+})();
+</script>
+</body>
+</html>
