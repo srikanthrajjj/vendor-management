@@ -242,20 +242,21 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
                     <div key={d}
                       onDragOver={e => { e.preventDefault(); setDrag(d); }} onDragLeave={() => setDrag(null)}
                       onDrop={e => { e.preventDefault(); setDrag(null); pick(d, e.dataTransfer.files[0]); }}
-                      className={`grid grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1.2fr)_auto] gap-3 items-center rounded-lg border-[1.5px] border-dashed px-4 py-3 ${drag === d ? "border-[#1cabe2] bg-[#eef9fd]" : "border-[rgba(0,0,0,0.14)]"}`}>
+                      className={`grid grid-cols-1 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)_212px] gap-x-5 gap-y-2 items-center rounded-lg border-[1.5px] border-dashed px-4 py-3 ${drag === d ? "border-[#1cabe2] bg-[#eef9fd]" : "border-[rgba(0,0,0,0.14)]"}`}>
                       <div>
-                        <p className="text-sm font-semibold text-[#1a2942]">{def.label} <span className={`ml-1 text-[10px] rounded-full px-2 py-0.5 ${def.mandatory ? "bg-[#fde6d8] text-[#b4440c]" : "bg-[#eef1f5] text-[#5c7490]"}`}>{def.mandatory ? "Mandatory" : "Optional"}</span></p>
+                        <span className={`inline-block mb-1 whitespace-nowrap text-[10px] font-semibold rounded-full px-2 py-0.5 ${def.mandatory ? "bg-[#fde6d8] text-[#b4440c]" : "bg-[#eef1f5] text-[#5c7490]"}`}>{def.mandatory ? "Mandatory" : "Optional"}</span>
+                        <p className="text-sm font-semibold text-[#1a2942]">{def.label}</p>
                         <p className="text-xs text-[#888] mt-0.5">{def.hint}</p>
                       </div>
                       <div className="text-xs min-w-0">
                         {f ? <div className="flex items-start gap-2"><FileText className="w-4 h-4 mt-px flex-shrink-0" style={{ color: CYAN }} aria-hidden /><span className="min-w-0"><b className="text-[#1a2942] break-all">{f.name}</b><br /><span className="text-[#888]">{fmtSize(f.size)} · {fmtDateTime(f.at)}</span></span></div>
-                          : <span className="text-[#999]">Drop a file here or use Upload</span>}
+                          : <span className="text-[#999]">No file yet. Drop one here.</span>}
                       </div>
-                      <div className="flex gap-2 flex-wrap md:justify-end">
+                      <div className="flex items-center gap-2 md:justify-end">
                         <input ref={el => { fileRef.current[d] = el; }} type="file" className="sr-only" id={"u-" + d} accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.png,.jpg,.jpeg" onChange={e => { pick(d, e.target.files?.[0]); e.target.value = ""; }} />
-                        <Btn size="sm" variant="secondary" onClick={() => fileRef.current[d]?.click()}><Upload className="w-3 h-3" aria-hidden />{f ? "Replace" : "Upload"}</Btn>
-                        {!f && def.profileFile && <Btn size="sm" variant="ghost" onClick={() => { setDoc(o.id, d, { name: def.profileFile!, size: 500000 }); ok(`${def.label} attached from your profile`); }}>Use from profile</Btn>}
+                        {!f && def.profileFile && <Btn size="sm" variant="ghost" className="whitespace-nowrap" onClick={() => { setDoc(o.id, d, { name: def.profileFile!, size: 500000 }); ok(`${def.label} attached from your profile`); }}>Use from profile</Btn>}
                         {f && <Btn size="sm" variant="ghost" aria-label={`Remove ${def.label}`} onClick={() => removeDoc(o.id, d)}><X className="w-3 h-3" aria-hidden />Remove</Btn>}
+                        <Btn size="sm" variant="secondary" className="min-w-[92px]" onClick={() => fileRef.current[d]?.click()}><Upload className="w-3 h-3" aria-hidden />{f ? "Replace" : "Upload"}</Btn>
                       </div>
                     </div>); })}
                 </div>
