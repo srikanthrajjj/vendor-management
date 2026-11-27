@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Check, ChevronDown, FileText, Paperclip, Upload, X, AlertCircle } from "lucide-react";
 import {
-  DOCS, CRITERIA, countdown, Opp, Resp, CURRENCIES, canEdit, checklist, fmtDate, fmtDateTime, fmtSize, isClosed, money,
+  DOCS, CRITERIA, VENDOR, countdown, Opp, Resp, CURRENCIES, canEdit, checklist, fmtDate, fmtDateTime, fmtSize, isClosed, money,
   removeDoc, saveDraft, setDoc, startResponse, submitResponse, updateResp,
 } from "./store";
 import { Btn, Card, CardHead, Field, Nav, inputCls, CYAN, ok, fail } from "./ui";
@@ -278,7 +278,7 @@ export default function ResponseTab({ o, r, go }: { o: Opp; r?: Resp; go: Nav })
                   <Summary o={o} r={r} onEdit={setStep} />
                   <label className="flex items-start gap-2.5 text-xs text-[#444] cursor-pointer">
                     <input type="checkbox" className="mt-0.5 accent-[#1cabe2] w-4 h-4" checked={agree} onChange={e => setAgree(e.target.checked)} />
-                    <span>I confirm the information and documents are accurate and that I am authorised to submit this response on behalf of {" "}<b>Acme Digital Solutions Pvt Ltd</b>.</span>
+                    <span>I confirm the information and documents are accurate and that I am authorised to submit this response on behalf of {" "}<b>{VENDOR.company}</b>.</span>
                   </label>
                 </div>
               </>

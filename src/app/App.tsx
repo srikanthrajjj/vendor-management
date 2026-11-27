@@ -7,7 +7,7 @@ import {
   Bell, FileText, User, Briefcase, ChevronRight, ChevronDown,
   Plus, Info, Eye, MoreVertical, Landmark, X, HelpCircle,
   Upload, Pencil, RefreshCw, CheckCircle2, ArrowRight, Check, Trash2, AlertTriangle,
-  LayoutDashboard, Megaphone, ClipboardList, FileSignature,
+  Home, Megaphone, ClipboardList, FileSignature,
 } from "lucide-react";
 import VendorModule from "@/app/vendor";
 import { actionItems, unreadCount, useVendor } from "@/app/vendor/store";
@@ -55,13 +55,12 @@ const COUNTRIES = ["Afghanistan","Australia","Canada","France","Germany","India"
 const PREVIEW_COLS: string[] = [];
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "opportunities", label: "Opportunities", icon: Megaphone },
   { id: "applications", label: "My Applications", icon: ClipboardList },
   { id: "contracts", label: "My Contracts", icon: FileSignature },
   { id: "invoices", label: "My Invoices", icon: FileText },
   { id: "notifications", label: "My Notifications", icon: Bell },
-  { id: "cases", label: "My Cases", icon: Briefcase },
   { id: "profile", label: "My Profile", icon: User, children: ["Basic Information","Experience","Contact","Education","Professional Skills","Banking","Supporting Documents"] },
 ];
 
@@ -729,11 +728,12 @@ export default function App() {
               const isExpanded = hasChildren && (isActive || profileExpanded);
               return (
                 <div key={item.id}>
+                  {item.id === "profile" && <div className="my-2 mx-6 border-t border-[rgba(0,0,0,0.08)]" />}
                   <button onClick={() => { go(item.id); if (hasChildren) setProfileExpanded(!profileExpanded || !isActive); }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors text-sm"
-                    style={{ color: isActive ? CYAN : "#444", fontWeight: isActive ? 600 : 400, backgroundColor: isActive && !hasChildren ? "rgba(28,171,226,0.07)" : "transparent", borderLeft: isActive ? `3px solid ${CYAN}` : "3px solid transparent" }}>
-                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: isActive ? CYAN : "#888" }} />
-                    <span className="flex-1">{item.label}</span>
+                    className="mx-3 w-[calc(100%-1.5rem)] rounded-xl flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors text-sm hover:bg-[#f1f7fb]"
+                    style={{ color: isActive ? "#0b5878" : "#3a4a5c", fontWeight: isActive ? 600 : 500, backgroundColor: isActive ? "#e1f0fa" : undefined }}>
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" style={{ color: isActive ? CYAN : "#6b7c8e" }} />
+                    <span className="flex-1 whitespace-nowrap">{item.label}</span>
                     {badges[item.id] > 0 && <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white grid place-items-center" style={{ backgroundColor: "#e87a1e" }} aria-label={`${badges[item.id]} need attention`}>{badges[item.id]}</span>}
                     {hasChildren && <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200" style={{ color: "#aaa", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }} />}
                   </button>
@@ -763,7 +763,7 @@ export default function App() {
 
         {/* ── Main ── */}
         {activeNav !== "profile" ? (
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto" style={{ background: "linear-gradient(180deg,#e6f2fa 0,#f3f8fc 340px,#f5f9fd 100%)" }}>
             <VendorModule section={activeNav} oppId={oppId} tab={oppTab} go={go} />
           </main>
         ) : (

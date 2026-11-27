@@ -75,7 +75,7 @@ function Container4() {
   return (
     <div className="bg-[#1a3055] relative rounded-[26843500px] shrink-0 size-[24px]" data-name="Container">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex items-center justify-center relative size-full">
-        <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[15px] not-italic relative shrink-0 text-[10px] text-white whitespace-nowrap">SH</p>
+        <p className="[word-break:break-word] font-['Inter:Bold',sans-serif] font-bold leading-[15px] not-italic relative shrink-0 text-[10px] text-white whitespace-nowrap">SV</p>
       </div>
     </div>
   );
@@ -85,7 +85,7 @@ function Text3() {
   return (
     <div className="relative shrink-0" data-name="Text">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col items-start relative size-full">
-        <p className="[word-break:break-word] font-['Inter:Medium',sans-serif] font-medium leading-[16px] not-italic relative shrink-0 text-[#444] text-[12px] whitespace-nowrap">EV-137 Sage Lane</p>
+        <p className="[word-break:break-word] font-['Inter:Medium',sans-serif] font-medium leading-[16px] not-italic relative shrink-0 text-[#444] text-[12px] whitespace-nowrap">Smile Ventures Pvt Ltd</p>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export const CRITERIA: [string, number][] = [
   ["Technical compliance", 40], ["Price competitiveness", 30], ["Relevant experience", 20], ["Delivery timeline", 10],
 ];
 export const CURRENCIES = ["USD", "EUR", "GBP", "INR", "AED"];
-export const VENDOR = { name: "Shirin Haghi", company: "Acme Digital Solutions Pvt Ltd", id: "V-100482" };
+export const VENDOR = { name: "Smile Ventures", company: "Smile Ventures Pvt Ltd", id: "V-100482" };
 
 const DAY = 864e5;
 export function addDays(n: number) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d; }
