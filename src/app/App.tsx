@@ -595,6 +595,8 @@ export default function App() {
   }
   const [activeSubNav, setActiveSubNav] = useState("Banking");
   const [profileExpanded, setProfileExpanded] = useState(false);
+  // Its sub-menu opens when you land on My Profile and closes when you leave; the header toggles it.
+  useEffect(() => { setProfileExpanded(activeNav === "profile"); }, [activeNav]);
   const [banks, setBanks] = useState<BankEntry[]>(INITIAL_BANKS);
 
   const [showAddBank, setShowAddBank] = useState(false);
@@ -724,11 +726,11 @@ export default function App() {
               const Icon = item.icon;
               const isActive = activeNav === item.id;
               const hasChildren = !!item.children;
-              const isExpanded = hasChildren && (isActive || profileExpanded);
+              const isExpanded = hasChildren && profileExpanded;
               return (
                 <div key={item.id}>
                   {item.id === "profile" && <div className="my-2 mx-6 border-t border-[rgba(0,0,0,0.08)]" />}
-                  <button onClick={() => { go(item.id); if (hasChildren) setProfileExpanded(!profileExpanded || !isActive); }}
+                  <button onClick={() => { if (hasChildren && isActive) setProfileExpanded(p => !p); else go(item.id); }}
                     className="mx-3 w-[calc(100%-1.5rem)] rounded-xl flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors text-sm hover:bg-[#f1f7fb]"
                     style={{ color: isActive ? "#0b5878" : "#3a4a5c", fontWeight: isActive ? 600 : 500, backgroundColor: isActive ? "#e1f0fa" : undefined }}>
                     <Icon className="w-[18px] h-[18px] flex-shrink-0" style={{ color: isActive ? CYAN : "#6b7c8e" }} />
