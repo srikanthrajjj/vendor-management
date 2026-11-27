@@ -60,7 +60,7 @@ const navItems = [
   { id: "applications", label: "My Applications", icon: ClipboardList },
   { id: "contracts", label: "My Contracts", icon: FileSignature },
   { id: "notifications", label: "My Notifications", icon: Bell },
-  { id: "profile", label: "My Profile", icon: User, children: ["Banking"] },
+  { id: "profile", label: "My Profile", icon: User },
 ];
 
 // ─── Field helper ────────────────────────────────────────────────
