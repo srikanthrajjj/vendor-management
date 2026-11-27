@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Clock, FilePen, FileText, Handshake, LayoutGrid, Megaphone, MessageSquareWarning, Receipt, BookOpen } from "lucide-react";
+import { ArrowRight, Check, Clock, FilePen, FileText, Handshake, LayoutGrid, MessageSquareWarning, Receipt } from "lucide-react";
 import heroImg from "@/assets/hero-child.png";
 import { OPPS, Opp, VENDOR, actionItems, closingSoon, countdown, fmtDate, isClosed, startResponse, statusOf, useVendor } from "./store";
 import { Btn, CYAN, Nav, StatusPill } from "./ui";
@@ -127,18 +127,17 @@ export default function Dashboard({ go }: { go: Nav }) {
         {/* Opportunities + checklist */}
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-5 items-start">
           <section className={`${panel} px-6 py-5`} style={panelShadow} aria-labelledby="oo">
-            <div className="flex items-start gap-4 mb-2 flex-wrap">
-              <Megaphone className="w-7 h-7 text-[#1c8fc4] mt-1" aria-hidden />
-              <div className="flex-1 min-w-[200px]"><h2 id="oo" className="text-lg font-bold text-[#0f1f38]">Open opportunities</h2><p className="text-sm text-[#37495f]">Procurement opportunities you can apply for.</p></div>
-              <button onClick={() => go("opportunities")} className="text-sm font-semibold flex items-center gap-1.5 hover:underline" style={{ color: "#0b6d96" }}>View all opportunities <ArrowRight className="w-4 h-4" aria-hidden /></button>
+            <div className="flex items-center justify-between gap-4 pb-4 mb-1 border-b border-[rgba(0,0,0,0.07)]">
+              <div><h2 id="oo" className="text-lg font-bold text-[#0f1f38] leading-tight">Open opportunities</h2><p className="text-xs text-[#6b7c8e] mt-0.5">{open.length} open · sorted by deadline</p></div>
+              <Btn variant="secondary" size="sm" onClick={() => go("opportunities")}>View all <ArrowRight className="w-3.5 h-3.5" aria-hidden /></Btn>
             </div>
             <ul>{open.slice(0, 5).map(o => <Row key={o.id} o={o} go={go} />)}</ul>
           </section>
 
           <section className={`${panel} px-6 py-5`} style={panelShadow} aria-labelledby="gm">
-            <div className="flex items-center gap-3"><BookOpen className="w-7 h-7 text-[#1c8fc4]" aria-hidden /><h2 id="gm" className="text-lg font-bold text-[#0f1f38]">Get the most from the Vendor Portal</h2></div>
+            <div className="pb-4 mb-1 border-b border-[rgba(0,0,0,0.07)]"><h2 id="gm" className="text-lg font-bold text-[#0f1f38] leading-tight">Getting started</h2><p className="text-xs text-[#6b7c8e] mt-0.5">Your path to a first application</p></div>
             <div className="flex items-center gap-3 mt-4 mb-3 text-xs text-[#37495f]">
-              <span className="font-semibold">{doneN} of {steps.length} complete</span>
+              <span className="font-semibold whitespace-nowrap">{doneN} of {steps.length} complete</span>
               <div className="flex-1 h-1.5 rounded-full bg-[#dbe9f3] overflow-hidden"><div className="h-full rounded-full" style={{ width: `${(doneN / steps.length) * 100}%`, backgroundColor: CYAN }} /></div>
             </div>
             <ul className="flex flex-col">
